@@ -1,0 +1,113 @@
+############################
+# 1. Build / Gradle
+############################
+build/
+out/
+target/
+.gradle/
+
+# gradle wrapper는 포함 (협업 필수)
+!gradle/wrapper/gradle-wrapper.jar
+
+############################
+# 2. Java / JVM
+############################
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+
+############################
+# 3. IDE - IntelliJ
+############################
+.idea/
+*.iml
+*.iws
+*.ipr
+
+############################
+# 4. IDE - VSCode
+############################
+.vscode/
+
+############################
+# 5. IDE - Eclipse / STS
+############################
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+bin/
+
+############################
+# 6. IDE - NetBeans
+############################
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+############################
+# 7. OS
+############################
+.DS_Store
+Thumbs.db
+
+############################
+# 8. Logs
+############################
+logs/
+*.log
+
+############################
+# 9. Spring Config (중요)
+############################
+application-local.yml
+application-local.properties
+application-secret.yml
+application-secret.properties
+
+############################
+# 10. Environment
+############################
+.env
+.env.*
+!.env.example
+
+############################
+# 11. Database (로컬 테스트용)
+############################
+*.db
+*.sqlite
+
+############################
+# 12. Test
+############################
+test-output/
+
+############################
+# 13. Docker / Infra
+############################
+docker-compose.override.yml
+
+############################
+# 14. Monitoring
+############################
+prometheus.yml
+
+############################
+# 15. Security (절대 금지)
+############################
+*.key
+*.pem
+*.p12
+
+############################
+# 16. Misc
+############################
+*.swp
+*~

@@ -1,5 +1,6 @@
 package com.layerd.domain.user;
 
+import com.layerd.domain.user.fixture.UserFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

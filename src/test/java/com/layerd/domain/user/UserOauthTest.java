@@ -1,11 +1,12 @@
 package com.layerd.domain.user;
 
+import com.layerd.domain.user.fixture.UserFixture;
+import com.layerd.domain.user.fixture.UserOauthFixture;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class UserOauthTest {

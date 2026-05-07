@@ -1,4 +1,6 @@
-package com.layerd.domain.user;
+package com.layerd.domain.user.fixture;
+
+import com.layerd.domain.user.User;
 
 public class UserFixture {
 

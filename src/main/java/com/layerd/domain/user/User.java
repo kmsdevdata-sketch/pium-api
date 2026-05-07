@@ -57,6 +57,15 @@ public class User {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void ban() {
+        if (this.status == UserStatus.BANNED) {
+            throw new IllegalArgumentException();
+        }
+
+        this.status = UserStatus.BANNED;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public boolean isActive() {
         return this.status == UserStatus.ACTIVE;
     }

@@ -1,7 +1,7 @@
 package com.layerd.domain.user.fixture;
 
-import com.layerd.domain.user.User;
-import com.layerd.domain.user.UserProfile;
+import com.layerd.domain.user.model.User;
+import com.layerd.domain.user.model.UserProfile;
 
 public class UserProfileFixture {
 

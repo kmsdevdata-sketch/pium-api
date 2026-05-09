@@ -1,5 +1,10 @@
-package com.layerd.domain.user;
+package com.layerd.domain.user.model;
 
+import com.layerd.domain.user.exception.UserErrorCode;
+import com.layerd.domain.user.exception.UserException;
+import com.layerd.domain.user.vo.UserId;
+import com.layerd.domain.user.enumtype.UserRole;
+import com.layerd.domain.user.enumtype.UserStatus;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -51,7 +56,7 @@ public class User {
 
     public void withdraw() {
         if (this.status == UserStatus.WITHDRAWN) {
-            throw new IllegalArgumentException();
+            throw new UserException(UserErrorCode.ALREADY_WITHDRAWN_USER);
         }
         this.status = UserStatus.WITHDRAWN;
         this.updatedAt = LocalDateTime.now();
@@ -59,7 +64,7 @@ public class User {
 
     public void ban() {
         if (this.status == UserStatus.BANNED) {
-            throw new IllegalArgumentException();
+            throw new UserException(UserErrorCode.ALREADY_BANNED_USER);
         }
 
         this.status = UserStatus.BANNED;

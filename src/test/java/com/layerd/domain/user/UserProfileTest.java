@@ -1,7 +1,10 @@
 package com.layerd.domain.user;
 
+import com.layerd.domain.user.exception.UserException;
 import com.layerd.domain.user.fixture.UserFixture;
 import com.layerd.domain.user.fixture.UserProfileFixture;
+import com.layerd.domain.user.model.User;
+import com.layerd.domain.user.model.UserProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -72,9 +75,9 @@ class UserProfileTest {
     @Test
     void 유저프로필_닉네임_예외_검증() {
         assertThatThrownBy(() -> UserProfile.create(user.getId(), " ", null))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(UserException.class);
 
         assertThatThrownBy(() -> userProfile.changeNickname(""))
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(UserException.class);
     }
 }

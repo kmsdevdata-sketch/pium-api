@@ -1,5 +1,9 @@
-package com.layerd.domain.user;
+package com.layerd.domain.user.model;
 
+import com.layerd.domain.user.exception.UserErrorCode;
+import com.layerd.domain.user.exception.UserException;
+import com.layerd.domain.user.vo.UserId;
+import com.layerd.domain.user.vo.UserProfileId;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -73,7 +77,7 @@ public class UserProfile {
 
     private static void validateNickname(String nickname) {
         if (nickname == null || nickname.isBlank()) {
-            throw new IllegalArgumentException();
+            throw new UserException(UserErrorCode.INVALID_NICKNAME);
         }
     }
 

@@ -1,9 +1,9 @@
 package com.layerd.domain.user.fixture;
 
-import com.layerd.domain.user.OauthProvider;
-import com.layerd.domain.user.ProviderUserId;
-import com.layerd.domain.user.User;
-import com.layerd.domain.user.UserOauth;
+import com.layerd.domain.user.enumtype.OauthProvider;
+import com.layerd.domain.user.vo.ProviderUserId;
+import com.layerd.domain.user.model.User;
+import com.layerd.domain.user.model.UserOauth;
 
 public class UserOauthFixture {
 

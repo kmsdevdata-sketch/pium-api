@@ -1,7 +1,11 @@
 package com.layerd.domain.user;
 
+import com.layerd.domain.user.enumtype.OauthProvider;
 import com.layerd.domain.user.fixture.UserFixture;
 import com.layerd.domain.user.fixture.UserOauthFixture;
+import com.layerd.domain.user.model.User;
+import com.layerd.domain.user.model.UserOauth;
+import com.layerd.domain.user.vo.ProviderUserId;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

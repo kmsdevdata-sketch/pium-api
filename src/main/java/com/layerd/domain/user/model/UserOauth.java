@@ -1,5 +1,9 @@
-package com.layerd.domain.user;
+package com.layerd.domain.user.model;
 
+import com.layerd.domain.user.enumtype.OauthProvider;
+import com.layerd.domain.user.vo.ProviderUserId;
+import com.layerd.domain.user.vo.UserId;
+import com.layerd.domain.user.vo.UserOauthId;
 import lombok.Getter;
 
 import java.time.LocalDateTime;

@@ -1,4 +1,7 @@
-package com.layerd.domain.user;
+package com.layerd.domain.user.vo;
+
+import com.layerd.domain.user.exception.UserErrorCode;
+import com.layerd.domain.user.exception.UserException;
 
 import java.util.UUID;
 
@@ -6,7 +9,7 @@ public record UserId(String value) {
 
     public UserId{
         if (value == null || value.isBlank()) {
-            throw new IllegalArgumentException();
+            throw new UserException(UserErrorCode.INVALID_USER_ID);
         }
     }
 

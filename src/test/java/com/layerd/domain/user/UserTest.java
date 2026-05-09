@@ -1,6 +1,9 @@
 package com.layerd.domain.user;
 
+import com.layerd.domain.user.enumtype.UserRole;
+import com.layerd.domain.user.enumtype.UserStatus;
 import com.layerd.domain.user.fixture.UserFixture;
+import com.layerd.domain.user.model.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

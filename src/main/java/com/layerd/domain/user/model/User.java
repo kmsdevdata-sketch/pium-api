@@ -1,10 +1,10 @@
 package com.layerd.domain.user.model;
 
+import com.layerd.domain.user.enumtype.UserRole;
+import com.layerd.domain.user.enumtype.UserStatus;
 import com.layerd.domain.user.exception.UserErrorCode;
 import com.layerd.domain.user.exception.UserException;
 import com.layerd.domain.user.vo.UserId;
-import com.layerd.domain.user.enumtype.UserRole;
-import com.layerd.domain.user.enumtype.UserStatus;
 import lombok.Getter;
 
 import java.time.LocalDateTime;

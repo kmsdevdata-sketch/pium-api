@@ -4,7 +4,8 @@ import com.layerd.domain.user.exception.UserErrorCode;
 import com.layerd.domain.user.exception.UserException;
 
 public enum OauthProvider {
-    GOOGLE, KAKAO;
+    GOOGLE,
+    KAKAO;
 
     public static OauthProvider of(String provider) {
         if (provider == null || provider.isBlank()) {

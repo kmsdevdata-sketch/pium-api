@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public record UserOauthId(String value) {
 
-    public UserOauthId{
+    public UserOauthId {
         if (value == null || value.isBlank()) {
             throw new UserException(UserErrorCode.INVALID_USER_OAUTH_ID);
         }

@@ -12,6 +12,6 @@ public record ProviderUserId(String value) {
     }
 
     public static ProviderUserId of(String value) {
-        return new ProviderUserId(value.trim());
+        return new ProviderUserId(value == null ? null : value.trim());
     }
 }

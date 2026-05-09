@@ -1,4 +1,12 @@
 package com.layerd.domain.skinanalysis.enumtype;
 
-public class SkinMetric {
+public enum SkinMetric {
+    DRYNESS,
+    SEBUM,
+    ACNE,
+    SENSITIVITY,
+    REDNESS,
+    PIGMENTATION,
+    BARRIER_WEAKNESS,
+    PHOTOAGING
 }

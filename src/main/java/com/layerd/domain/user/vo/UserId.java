@@ -7,7 +7,7 @@ import java.util.UUID;
 
 public record UserId(String value) {
 
-    public UserId{
+    public UserId {
         if (value == null || value.isBlank()) {
             throw new UserException(UserErrorCode.INVALID_USER_ID);
         }

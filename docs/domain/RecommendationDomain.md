@@ -3,8 +3,8 @@
 ### 1. Overview
 Recommendation 도메인은 사용자에게 적절한 제품을 추천하는 역할을 담당한다.
 
-이 도메인은 SkinAnalysis에서 도출된 필요 성분군과  
-Product 도메인의 제품 성분 데이터를 기반으로 비교를 수행하고,  
+이 도메인은 SkinAnalysis에서 도출된 사용자 상태 벡터와  
+Product 도메인의 제품 특성 벡터를 기반으로 비교를 수행하고,  
 그 결과로 추천 목록을 생성한다.
 
 이 도메인은 “분석”을 수행하지 않으며,  
@@ -13,8 +13,9 @@ Product 도메인의 제품 성분 데이터를 기반으로 비교를 수행하
 ### 2. Responsibility
 
 - 추천 요청 처리
-- 사용자 요구 성분군과 제품 데이터 비교
-- 제품별 점수 산출
+- 사용자 상태와 제품 특성 비교
+- 제품별 적합도/위험도 계산
+- 안전성 게이팅 및 감점 정책 적용
 - 추천 결과 생성
 ---
 ### 3. Core Concepts
@@ -22,7 +23,9 @@ Product 도메인의 제품 성분 데이터를 기반으로 비교를 수행하
 추천을 수행하기 위한 입력 모델
 
 - 사용자 식별 정보 (UserId)
-- 필요 성분군 정보 (RequiredIngredientGroup)
+- 피부 상태 벡터 정보 (SkinMetricScore)
+- 사용자 목표/선호 정보 (Goal / Preference)
+- 안전 제약 정보 (Safety Constraint)
 ---
 #### 3.2 ProductScore
 사용자 요구와 제품 간의 매칭 결과
@@ -37,22 +40,23 @@ Product 도메인의 제품 성분 데이터를 기반으로 비교를 수행하
 ### 4. Domain Flow
 ```text
 recommendation-flow
-RequiredIngredientGroup + ProductIngredientScore → ProductScore 계산 → 정렬 및 필터링 → 추천 결과 생성
+SkinMetricScore + ProductProfile + Goal/Safety → 적합도 계산 → 안전성 게이팅/보정 → 정렬 및 필터링 → 추천 결과 생성
 ```
 ---
 ### 5. Boundary
 
-- SkinAnalysis의 내부 모델(SkinCondition 등)을 알지 않는다
-- Product 도메인의 내부 계산 로직을 알지 않는다
+- SkinAnalysis의 내부 해석 로직을 알지 않는다
+- Product 도메인의 내부 산출 로직을 알지 않는다
 - 오직 다음 데이터만 사용한다:
-    - RequiredIngredientGroup
-    - ProductIngredientScore
+    - SkinMetricScore(및 선택적 파생 신호)
+    - ProductProfile
+    - Goal / Safety 정보
 ---
 ### 6. Key Design Principle
 
-- “비교”에만 집중한다
-- 입력은 해석된 데이터만 받는다 (RequiredIngredientGroup)
-- 제품은 계산된 데이터만 사용한다 (ProductIngredientScore)
+- "상태 기반 비교"에 집중한다
+- 정확도보다 안전성(민감/장벽 리스크 제어)을 우선한다
+- 고정 임계값/고정 계수는 문서에서 확정하지 않고 규칙 버전으로 관리한다
 ---
 ### 7. Notes
 

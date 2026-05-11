@@ -1,134 +1,104 @@
-# 추천 도메인 설계 정리 (근거 기반)
+# 스킨 추천 설계 개요 (State-based 전환)
 
-## 1. 추천 방식과 알고리즘 설명
+## 1. 목적
+이 문서는 스킨 추천 시스템의 기준 방향을 정리한다.  
+핵심은 `Need-based` 추천에서 `State-based` 추천으로 전환하고, 안전성을 우선하는 것이다.
 
-추천은 2단계 계산으로 분리한다.
+## 2. 설계 방향
 
-1. 피부 해석 단계 (`SkinAnalysis`)
-- 입력: 설문/사용자 상태 입력
-- 처리: 피부 상태군 점수화 (`SkinMetricScore`, 0~100)
-- 출력: 필요 성분군 가중치 (`RequiredIngredient`, 0~100)
+기존:
+```text
+설문 -> SkinMetric -> RequiredIngredient -> 제품 성분군 매칭 -> 추천
+```
 
-2. 상품 매칭 단계 (`Recommendation`)
-- 입력: 필요 성분군 + 상품 데이터
-- 처리: 성분 적합도 계산 -> 안전 보정 -> 정규화 -> 랭킹
-- 출력: 추천 상품 목록
+변경:
+```text
+설문 -> SkinMetric(상태 벡터) -> ProductProfile(제품 특성 벡터) 비교 -> 안전성 게이팅 -> 추천
+```
 
-핵심 설계 원칙
-- 해석과 추천 실행을 분리한다.
-- 상태군과 성분군은 다대다 가중치로 연결한다.
-- 안전 보정(민감/장벽)을 효능보다 우선 적용한다.
+원칙:
+- 상태(State)와 전략(Recommendation Policy)을 분리한다.
+- 추천 정확도보다 안전성(민감/장벽 리스크)을 우선한다.
+- 고정 임계값/고정 계수는 문서에서 확정하지 않고 정책 버전으로 관리한다.
 
----
+## 3. 상태 모델
 
-## 2. 피부상태군과 선별 이유 (근거 포함)
+`SkinMetric`은 "필요도"가 아니라 "현재 상태"를 표현한다.
 
-MVP 상태군(8개):
-- `DRYNESS`
-- `SEBUM`
-- `ACNE`
-- `SENSITIVITY`
-- `REDNESS`
-- `PIGMENTATION`
-- `BARRIER_WEAKNESS`
-- `PHOTOAGING`
+예시 축:
+- DRYNESS
+- BARRIER
+- OILINESS
+- BLEMISH_PRONENESS
+- SENSITIVITY
+- PIGMENTATION_TONE
+- AGING_SIGNS
 
-선별 이유:
-- `DRYNESS`, `BARRIER_WEAKNESS`: 보습/장벽 우선순위 결정에 필요
-    - 근거: 장벽 손상 피부에서 보습·장벽 보호의 중요성
-    - 출처: National Eczema Association moisturization guidance
-- `SENSITIVITY`, `REDNESS`: 자극 리스크 통제와 저자극 전략에 필요
-    - 근거: 민감/홍조 피부에서 gentle, fragrance 최소화, 자외선 관리 권고
-    - 출처: AAD rosacea/pregnancy skin care guidance
-- `ACNE`, `SEBUM`: 여드름/피지 관련 성분 및 강도 결정에 필요
-    - 근거: 여드름 관리 성분 사용 시 효능-자극 균형 필요
-    - 출처: AAD acne guidance
-- `PIGMENTATION`, `PHOTOAGING`: 자외선 차단/톤/노화 관리 우선순위에 필요
-    - 근거: 색소·광노화 관리에서 광보호가 핵심
-    - 출처: AAD melasma, FDA sunscreen guidance
+해석 원칙:
+- 각 축은 배타적 타입이 아니라 공존 가능한 연속 상태값이다.
+- 복합 상태(예: 건조 + 유분 + 민감)를 정상 케이스로 처리한다.
 
----
+## 4. 제품 모델
 
-## 3. 성분군과 선별 이유 (근거 포함)
+제품은 단순 성분군 태그보다 `제품 특성 벡터(ProductProfile)`로 다룬다.
 
-MVP 성분군(10개):
-- `HYDRATION`
-- `BARRIER_REPAIR`
-- `SEBUM_CONTROL`
-- `ACNE_CARE`
-- `SOOTHING`
-- `BRIGHTENING`
-- `TURNOVER`
-- `ANTI_AGING`
-- `PHOTOPROTECTION`
-- `GENTLE_CLEANSING`
+예시 특성:
+- benefit traits (보습/진정/트러블 케어 기여)
+- risk traits (자극 위험, 각질 제거 강도 등)
+- compatibility traits (민감 피부 적합성, 장벽 친화성 등)
 
-선별 이유:
-- `PHOTOPROTECTION`: 색소/홍조/광노화 악화 방지의 기반축
-    - 근거: broad-spectrum, SPF 기준, 재도포 권고
-    - 출처: FDA, AAD
-- `HYDRATION`, `BARRIER_REPAIR`, `GENTLE_CLEANSING`: 민감/장벽저하 사용자 안전 확보
-    - 근거: 보습/장벽 보호/순한 세정 권고
-    - 출처: AAD, National Eczema Association
-- `ACNE_CARE`, `SEBUM_CONTROL`, `TURNOVER`: 여드름/면포/피지 문제 대응
-    - 근거: 여드름 관련 유효 성분군 존재, 단 안전조건 필요
-    - 출처: AAD acne guidance
-- `SOOTHING`: 자극/홍조 완화 축
-- `BRIGHTENING`: 색소 문제 대응 축
-- `ANTI_AGING`: 광노화/탄력 저하 대응 축
+## 5. 추천 계산 원칙
 
-운영 원칙:
-- 특정 성분군 점수가 높아도 민감/장벽 점수가 높으면 강도 제한 보정한다.
-- “필요 없음”이 아니라 “고강도 제한”으로 해석한다.
+추천은 다음 세 축의 결합으로 계산한다.
+- Benefit: 사용자 상태/목표에 대한 기대 효용
+- Risk: 민감/장벽/금기와의 충돌 위험
+- Goal: 사용자 우선 목표 반영
 
----
+정책 원칙:
+- 위험이 큰 경우 가산점보다 게이팅/제한을 우선 적용한다.
+- 정책은 `rulesVersion`으로 관리하고, 운영 중 지속 튜닝한다.
 
-## 4. Conditional Adoption (After Product Domain Expansion)
+## 6. 설문 설계 원칙 (MVP)
 
-아래는 Product 도메인 확장 후 적용한다.
+- 문항 수는 이탈률을 고려해 짧게 유지한다(약 12문항 수준).
+- 설문은 상태 추정에 필요한 관찰 가능 증상 중심으로 구성한다.
+- Goal / Safety 문항을 별도로 포함해 추천 우선순위와 제한 조건을 반영한다.
 
-필요 메타데이터:
-- `productCategory` (cleanser/serum/cream/sunscreen 등)
-- `leaveOnType` (rinse-off/leave-on)
-- `usageTime` (AM/PM/BOTH)
-- `activeStrength` (LOW/MEDIUM/HIGH/UNKNOWN)
-- `fragranceFlag`
-- `pregnancyCautionFlag`
-- `comedogenicRisk`
+권장 구성:
+- DRYNESS: 2
+- OILINESS: 2
+- BLEMISH: 2
+- SENSITIVITY: 2
+- PIGMENTATION: 1
+- AGING: 1
+- GOAL: 1
+- SAFETY: 1
 
-적용 원칙:
-- Product 도메인에서 제공되지 않는 메타에 의존한 규칙은 차용하지 않는다.
-- 현재 단계는 성분군 기반 추천 + 안전 보정까지만 적용한다.
+## 7. BARRIER 처리
 
----
+- MVP에서 BARRIER는 직접 체감이 어려운 잠재 상태로 본다.
+- 사용자 관찰 증상(건조, 따가움, 붉어짐, 쉽게 뒤집힘 등)을 기반으로 파생 해석한다.
+- 구체 계수/임계값은 고정하지 않고 버전 정책으로 관리한다.
 
-## 5. ReasonCode 재정리
+## 8. Explainability 원칙
 
-결론:
-- 고정 enum을 대량 정의해 초기부터 강제하지 않는다.
+추천 결과는 반드시 설명 가능해야 한다.
 
-대신:
-1. 추천 결과에 설명 슬롯을 둔다 (`primaryReasons`, `safetyAdjustments`)
-2. 운영 로그를 통해 반복 패턴을 수집한다
-3. 상위 빈출 설명만 표준 코드로 수렴한다
+예:
+- "트러블 케어 효용은 높지만 현재 민감도가 높아 저자극 제품을 우선 추천했습니다."
+- "장벽 부담이 큰 조합은 이번 추천에서 제외했습니다."
 
-이유:
-- 초기엔 케이스 다양성이 높아 고정 코드셋이 쉽게 과소/과대적합된다.
-- 먼저 품질/설명 로그를 축적한 뒤 표준화하는 편이 안전하다.
+## 9. 운영상 주의점
 
----
+- 추천 품질의 핵심 병목은 제품 메타데이터(ProductProfile) 품질이다.
+- 제품 특성 정의/검수 체계를 별도 운영해야 한다.
+- 설문 문항/정책 변경 시 `rulesVersion` 단위로 회귀 검증한다.
 
-## 참고 출처
+## 10. 결론
 
-- FDA sun safety / sunscreen labeling guidance
-    - https://www.fda.gov/consumers/consumer-updates/tips-stay-safe-sun-sunscreen-sunglasses
-- AAD melasma self-care
-    - https://www.aad.org/dermatology-a-to-z/diseases-and-treatments/m---p/melasma/tips
-- AAD rosacea trigger prevention
-    - https://www.aad.org/rosacea-prevent-triggers
-- AAD pregnancy skin care / ingredient caution
-    - https://www.aad.org/public/everyday-care/skin-care-secrets/routine/pregnancy-skin-care
-- AAD acne treatment in pregnancy
-    - https://www.aad.org/public/diseases/acne/derm-treat/pregnancy
-- National Eczema Association moisturizing guidance
-    - https://nationaleczema.org/eczema/treatment/moisturizing/
+현재 프로젝트의 추천 설계는 다음 기준을 따른다.
+- 상태 중심(State-based) 모델
+- 안전성 우선 게이팅
+- 정책 버전 기반의 지속 개선
+
+이 방향을 기준으로 문항/정책/제품 프로파일을 단계적으로 고도화한다.

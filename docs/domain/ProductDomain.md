@@ -12,7 +12,8 @@ Product 도메인은 제품 및 성분 정보를 관리하고,
 - 제품 정보 관리
 - 성분 정보 관리
 - 성분군 분류 관리
-- 제품별 성분군 점수 제공
+- 제품 특성 프로파일 제공
+- 안전성 관련 메타데이터 제공
 ---
 ### 3. Core Concepts
 #### 3.1 Product
@@ -36,23 +37,23 @@ Product 도메인은 제품 및 성분 정보를 관리하고,
 특징:
 - 도메인 전반에서 공통적으로 사용되는 기준 개념
 ---
-#### 3.3 ProductIngredientGroupScore
-제품이 각 성분군에 대해 가지는 점수
+#### 3.3 ProductProfile
+제품이 피부 상태에 어떤 방향으로 작용하는지 표현하는 프로파일
 
 - ProductId
-- IngredientGroup
-- Score
+- Benefit Traits (예: hydration support, calming support)
+- Risk Traits (예: irritation risk, exfoliation strength)
+- Compatibility Traits (예: barrier friendly, sensitive-skin suitability)
 
 특징:
-- 사전 계산된 데이터
-- 추천 도메인에서 사용되는 기준 값
-- 계산 로직은 포함하지 않음
+- 추천 도메인에서 상태 기반 비교에 사용하는 기준 데이터
+- 수치 스케일/계수/임계값은 Product가 아닌 Recommendation 정책에서 해석
 ---
 ### 4. Domain Flow
 
 ```text
 product-flow
-제품 수집 → 성분 추출 → 성분군 매핑 → 점수 계산 → ProductIngredientGroupScore 저장
+제품 수집 → 성분 추출 → 특성 매핑 → ProductProfile 저장/갱신
 ```
 ---
 ### 5. Boundary
@@ -64,11 +65,10 @@ product-flow
 ### 6. Key Design Principle
 
 - “데이터 제공”에 집중한다
-- 계산은 외부에서 수행하고 결과만 보유한다
+- 제품 영향 특성은 제공하되, 추천 점수 계산은 수행하지 않는다
 - 추천 로직을 포함하지 않는다
 ---
 ### 7. Notes
 
-- 성분군 점수는 AI 또는 별도 로직을 통해 사전 계산된다
-- 계산 방식은 변경 가능하며, 도메인 외부에서 관리한다
-- Product 도메인은 해당 계산 방식에 의존하지 않는다
+- 제품 특성화 방식은 변경 가능하며, 도메인 외부 파이프라인에서 관리한다
+- Product 도메인은 추천 정책의 가중치/임계값에 의존하지 않는다

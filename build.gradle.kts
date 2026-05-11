@@ -4,9 +4,9 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 }
 
-group = "com.layerd"
+group = "com.pium"
 version = "0.0.1-SNAPSHOT"
-description = "layerd"
+description = "pium"
 
 java {
     toolchain {

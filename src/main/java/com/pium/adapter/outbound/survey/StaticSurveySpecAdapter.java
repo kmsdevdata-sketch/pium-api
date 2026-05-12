@@ -16,7 +16,6 @@ public class StaticSurveySpecAdapter implements LoadSurveySpecPort {
     public Optional<SurveySpecView> loadCurrent() {
         try {
             return Optional.of(createSingleQuestionSpec(
-                    "v1",
                     "Q_DRYNESS_1",
                     "세안 후 얼굴이 당기나요?",
                     frequencyOptions()
@@ -27,13 +26,11 @@ public class StaticSurveySpecAdapter implements LoadSurveySpecPort {
     }
 
     private static SurveySpecView createSingleQuestionSpec(
-            String version,
             String questionId,
             String title,
             List<SurveySpecView.Option> options
     ) {
         return new SurveySpecView(
-                version,
                 List.of(
                         new SurveySpecView.Question(
                                 questionId,

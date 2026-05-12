@@ -21,7 +21,7 @@ public class SkinAnalysisResultFixture {
 
     public static List<SkinMetricScore> createSkinMetricScores() {
         return List.of(
-                SkinMetricScore.of(SkinMetric.DRYNESS_BARRIER, 70),
+                SkinMetricScore.of(SkinMetric.DRYNESS, 70),
                 SkinMetricScore.of(SkinMetric.OILINESS, 35),
                 SkinMetricScore.of(SkinMetric.SENSITIVITY, 60)
         );

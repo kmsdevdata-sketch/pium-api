@@ -11,7 +11,6 @@ import java.util.List;
  * 설문 스펙 조회 응답 DTO (최소형)
  */
 public record SurveySpecView(
-        String version,
         List<Question> questions
 ) {
 

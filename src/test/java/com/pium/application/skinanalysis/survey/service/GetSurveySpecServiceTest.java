@@ -4,6 +4,7 @@ import com.pium.application.skinanalysis.survey.exception.SurveyApplicationError
 import com.pium.application.skinanalysis.survey.exception.SurveyApplicationException;
 import com.pium.application.skinanalysis.survey.provided.dto.SurveySpecView;
 import com.pium.application.skinanalysis.survey.required.LoadSurveySpecPort;
+import com.pium.fixture.SurveySpecViewFixture;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -23,18 +24,7 @@ public class GetSurveySpecServiceTest {
     @Test
     void getSurveySpec_returnsValue_whenPresent() {
 
-        SurveySpecView expected = new SurveySpecView(
-                List.of(
-                        new SurveySpecView.Question(
-                                "Q_DRYNESS_1",
-                                "세안 후 얼굴이 당기나요?",
-                                List.of(
-                                        new SurveySpecView.Option("NONE", "거의 없음"),
-                                        new SurveySpecView.Option("ALWAYS", "거의 항상")
-                                )
-                        )
-                )
-        );
+        SurveySpecView expected = SurveySpecViewFixture.createSurveySpecView();
 
         // loadCurrent호출시 Optional.of(expected) 반환 지시
         when(loadSurveySpecPort.loadCurrent()).thenReturn(Optional.of(expected));

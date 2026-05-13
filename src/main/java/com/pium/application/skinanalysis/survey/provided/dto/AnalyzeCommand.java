@@ -21,7 +21,7 @@ public record AnalyzeCommand(
      * @param questionId 설문 문항 식별자 (ex.Q_DRYNESS_1)
      * @param selectedOptionCodes 사용자가 선택한 옵션 코드 목록
      */
-    record Answer(
+    public record Answer(
             String questionId,
             List<String> selectedOptionCodes
     ) {

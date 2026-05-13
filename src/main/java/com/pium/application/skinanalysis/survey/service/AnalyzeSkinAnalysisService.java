@@ -9,7 +9,6 @@ import com.pium.application.skinanalysis.survey.required.dto.NormalizeSurveySubm
 import com.pium.domain.skinanalysis.SkinAnalysisEngine;
 import com.pium.domain.skinanalysis.model.SkinAnalysisResult;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

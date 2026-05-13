@@ -1,6 +1,7 @@
 package com.pium.application.skinanalysis.survey.provided;
 
 import com.pium.application.skinanalysis.survey.provided.dto.AnalyzeCommand;
+import com.pium.application.skinanalysis.survey.provided.dto.AnalyzeResultView;
 
 /**
  * Provided Port
@@ -9,6 +10,12 @@ import com.pium.application.skinanalysis.survey.provided.dto.AnalyzeCommand;
  */
 public interface AnalyzeSkinAnalysis {
 
+    /**
+     * 설문 응답을 받아 분석을 수행한다.
+     *
+     * @param command 설문 응답 커맨드
+     * @return 분석 결과 뷰
+     */
     AnalyzeResultView analyze(AnalyzeCommand command);
 
 

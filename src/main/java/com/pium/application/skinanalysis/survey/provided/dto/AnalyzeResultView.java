@@ -9,7 +9,7 @@ import java.util.List;
  * @param skinMetricScores 피부 상태 점수 목록
  */
 public record AnalyzeResultView(
-        List<SkinMetricScoreView> skinMetricScores,
+        List<SkinMetricScoreView> skinMetricScores
 ) {
 
     /**
@@ -18,7 +18,7 @@ public record AnalyzeResultView(
      * @param metricKey 피부 상태 지표 (ex.DRYNESS,OILINESS)
      * @param score 상태 점수
      */
-    record SkinMetricScoreView(
+    public record SkinMetricScoreView(
             String metricKey,
             int score
     ) {

@@ -1,9 +1,13 @@
 package com.pium.adapter.inbound.web.skinanalysis.survey;
 
 import com.pium.adapter.inbound.web.skinanalysis.SurveyController;
+import com.pium.adapter.outbound.skinanalysis.fixture.AnalyzeCommandFixture;
+import com.pium.application.skinanalysis.analyze.dto.AnalyzeCommand;
+import com.pium.application.skinanalysis.analyze.dto.AnalyzeResultView;
 import com.pium.application.skinanalysis.analyze.provided.AnalyzeSkinAnalysis;
 import com.pium.application.skinanalysis.spec.provided.GetSurveySpec;
 import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
+import com.pium.fixture.AnalyzeResultViewFixture;
 import com.pium.fixture.SurveySpecViewFixture;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,9 +18,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.http.MediaType;
 
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -56,4 +62,37 @@ class SurveyControllerTest {
 
         verify(getSurveySpec, times(1)).getSurveySpec();
     }
+
+    @Test
+    void analyze_returnsApiResponse() throws Exception {
+        AnalyzeResultView view = AnalyzeResultViewFixture.createAnalyzeResultView();
+
+        given(analyzeSkinAnalysis.analyze(any(AnalyzeCommand.class))).willReturn(view);
+
+        String requestJson = """
+        {
+          "answers": [
+            { "questionId": "Q_DRYNESS_1", "selectedOptionCodes": ["Q1_2"] },
+            { "questionId": "Q_DRYNESS_2", "selectedOptionCodes": ["Q2_1"] }
+          ],
+          "goals": ["Q11_1", "Q11_2"]
+        }
+        """;
+
+        mockMvc.perform(post("/api/v1/surveys/analyze")
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestJson)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.skinMetricScores[0].metricKey").value("DRYNESS"))
+                .andExpect(jsonPath("$.data.skinMetricScores[0].score").value(72))
+                .andExpect(jsonPath("$.data.skinMetricScores[1].metricKey").value("BARRIER"))
+                .andExpect(jsonPath("$.data.skinMetricScores[1].score").value(60));
+
+        verify(analyzeSkinAnalysis, times(1)).analyze(any(AnalyzeCommand.class));
+    }
+
 }

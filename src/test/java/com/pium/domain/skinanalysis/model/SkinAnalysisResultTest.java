@@ -4,8 +4,6 @@ import com.pium.domain.skinanalysis.enumtype.IngredientGroup;
 import com.pium.domain.skinanalysis.enumtype.SkinMetric;
 import com.pium.domain.skinanalysis.exception.SkinAnalysisException;
 import com.pium.domain.skinanalysis.fixture.SkinAnalysisResultFixture;
-import com.pium.domain.skinanalysis.vo.RequiredIngredient;
-import com.pium.domain.skinanalysis.vo.RulesVersion;
 import com.pium.domain.skinanalysis.vo.SkinAnalysisResultId;
 import com.pium.domain.skinanalysis.vo.SkinMetricScore;
 import com.pium.domain.user.vo.UserId;
@@ -13,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,23 +20,22 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class SkinAnalysisResultTest {
 
     UserId userId;
-    RulesVersion rulesVersion;
     List<SkinMetricScore> skinMetricScores;
-    List<RequiredIngredient> requiredIngredients;
+    List<String> goals;
 
     @BeforeEach
     void setUp() {
         userId = SkinAnalysisResultFixture.createUserId();
-        rulesVersion = SkinAnalysisResultFixture.createRulesVersion();
         skinMetricScores = SkinAnalysisResultFixture.createSkinMetricScores();
-        requiredIngredients = SkinAnalysisResultFixture.createRequiredIngredients();
+        goals = SkinAnalysisResultFixture.createGoals();
     }
 
     @Test
     void 피부분석결과_생성_검증() {
         SkinAnalysisResult result = SkinAnalysisResult.create(
                 userId,
-                skinMetricScores
+                skinMetricScores,
+                goals
         );
 
         assertThat(result.getId()).isNotNull();
@@ -56,6 +54,7 @@ class SkinAnalysisResultTest {
                 id,
                 userId,
                 skinMetricScores,
+                goals,
                 createdAt,
                 updatedAt
         );
@@ -71,7 +70,8 @@ class SkinAnalysisResultTest {
     void 피부상태점수목록_비어있으면_예외_검증() {
         assertThatThrownBy(() -> SkinAnalysisResult.create(
                 userId,
-                List.of()
+                List.of(),
+                goals
         )).isInstanceOf(SkinAnalysisException.class);
     }
 
@@ -94,26 +94,39 @@ class SkinAnalysisResultTest {
     }
 
     @Test
-    void 필요성분군가중치_경계값_검증() {
-        RequiredIngredient min = RequiredIngredient.of(IngredientGroup.HYDRATION, 0);
-        RequiredIngredient max = RequiredIngredient.of(IngredientGroup.HYDRATION, 100);
-
-        assertThat(min.weight()).isEqualTo(0);
-        assertThat(max.weight()).isEqualTo(100);
+    void 목표목록_null이면_예외_검증() {
+        assertThatThrownBy(() -> SkinAnalysisResult.create(
+                userId,
+                skinMetricScores,
+                null
+        )).isInstanceOf(SkinAnalysisException.class);
     }
 
     @Test
-    void 필요성분군가중치_범위초과시_예외_검증() {
-        assertThatThrownBy(() -> RequiredIngredient.of(IngredientGroup.HYDRATION, -1))
-                .isInstanceOf(SkinAnalysisException.class);
-
-        assertThatThrownBy(() -> RequiredIngredient.of(IngredientGroup.HYDRATION, 101))
-                .isInstanceOf(SkinAnalysisException.class);
+    void 목표목록_비어있으면_예외_검증() {
+        assertThatThrownBy(() -> SkinAnalysisResult.create(
+                userId,
+                skinMetricScores,
+                List.of()
+        )).isInstanceOf(SkinAnalysisException.class);
     }
 
     @Test
-    void 룰버전_blank_예외_검증() {
-        assertThatThrownBy(() -> RulesVersion.of(" "))
-                .isInstanceOf(SkinAnalysisException.class);
+    void goals_불변_검증() {
+        SkinAnalysisResult result = SkinAnalysisResult.create(userId, skinMetricScores, goals);
+
+        assertThatThrownBy(() -> result.getGoals().add("Q11_3"))
+                .isInstanceOf(UnsupportedOperationException.class);
     }
+
+    @Test
+    void 생성후_원본리스트_변경해도_결과불변_검증() {
+        List<String> mutableGoals = new ArrayList<>(goals);
+
+        SkinAnalysisResult result = SkinAnalysisResult.create(userId, skinMetricScores, mutableGoals);
+        mutableGoals.add("Q11_5");
+
+        assertThat(result.getGoals()).doesNotContain("Q11_5");
+    }
+
 }

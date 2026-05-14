@@ -1,10 +1,9 @@
-package com.pium.application.skinanalysis.survey.service;
+package com.pium.application.skinanalysis.spec.service;
 
 import com.pium.application.skinanalysis.exception.SurveyApplicationErrorCode;
 import com.pium.application.skinanalysis.exception.SurveyApplicationException;
 import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
 import com.pium.application.skinanalysis.spec.required.LoadSurveySpecPort;
-import com.pium.application.skinanalysis.spec.service.GetSurveySpecService;
 import com.pium.fixture.SurveySpecViewFixture;
 import org.junit.jupiter.api.Test;
 

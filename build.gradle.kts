@@ -63,6 +63,7 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-testcontainers")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     testImplementation("org.testcontainers:mysql")
+    testImplementation("com.h2database:h2")
 }
 
 

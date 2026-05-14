@@ -9,10 +9,7 @@ import com.pium.application.skinanalysis.spec.provided.GetSurveySpec;
 import com.pium.application.skinanalysis.analyze.dto.AnalyzeResultView;
 import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
 @RestController
@@ -34,7 +31,7 @@ public class SurveyController {
     /**
      * 설문 분석 API
      */
-    @GetMapping("/analyze")
+    @PostMapping("/analyze")
     public ApiResponse<AnalyzeSurveyResponse> analyze(
             @RequestBody AnalyzeSurveyRequest request
     ) {

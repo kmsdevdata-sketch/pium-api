@@ -30,6 +30,15 @@ public class SkinAnalysisResultEntity {
     @Column(name = "user_id", nullable = false, length = 64)
     private String userId;
 
+    // goals는 값 컬렉션으로 별도 테이블에 저장
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(
+            name = "skin_analysis_goal",
+            joinColumns = @JoinColumn(name = "result_id")
+    )
+    @Column(name = "goal_code", nullable = false, length = 64)
+    private List<String> goals;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -39,11 +48,13 @@ public class SkinAnalysisResultEntity {
     private SkinAnalysisResultEntity(
             String resultId,
             String userId,
+            List<String> goals,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
         this.resultId = resultId;
         this.userId = userId;
+        this.goals = List.copyOf(goals);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
     }
@@ -52,6 +63,7 @@ public class SkinAnalysisResultEntity {
         SkinAnalysisResultEntity entity = new SkinAnalysisResultEntity(
                 domain.getId().value(),
                 domain.getUserId().value(),
+                domain.getGoals(),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()
         );

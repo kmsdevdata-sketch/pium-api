@@ -24,7 +24,7 @@ public class SkinMetricScoreEntity {
     @Column(name = "metric", nullable = false, length = 64)
     private SkinMetric metric;
 
-    @Column(name = "score", nullable = false)
+    @Column(name = "score_value", nullable = false)
     private int score;
 
     private SkinMetricScoreEntity(

@@ -20,12 +20,19 @@ public class SurveySubmissionNormalizerAdapter implements NormalizeSurveySubmiss
     @Override
     public NormalizeSurveySubmission normalize(AnalyzeCommand command) {
         validateCommand(command);
+        validateGoals(command.goals());
 
         List<NormalizeSurveySubmission.NormalizedAnswer> answers = command.answers().stream()
                 .map(this::normalizeAnswer)
                 .toList();
 
-        return new NormalizeSurveySubmission(answers);
+        return new NormalizeSurveySubmission(answers,command.goals());
+    }
+
+    private void validateGoals(List<String> goals) {
+        if (goals == null || goals.isEmpty()) {
+            throw new SkinAnalysisAdapterException(SkinAnalysisAdapterErrorCode.INVALID_ANSWER_PAYLOAD);
+        }
     }
 
     private NormalizeSurveySubmission.NormalizedAnswer normalizeAnswer(AnalyzeCommand.Answer answer) {

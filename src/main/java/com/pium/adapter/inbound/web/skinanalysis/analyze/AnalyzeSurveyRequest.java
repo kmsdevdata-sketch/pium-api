@@ -8,14 +8,15 @@ import java.util.List;
  * 설문 분석 요청 DTO
  */
 public record AnalyzeSurveyRequest(
-        List<AnswerRequest> answers
+        List<AnswerRequest> answers,
+        List<String> goals
 ) {
 
     public AnalyzeCommand toCommand() {
         List<AnalyzeCommand.Answer> mapped = answers.stream()
                 .map(a -> new AnalyzeCommand.Answer(a.questionId(), a.selectedOptionCodes()))
                 .toList();
-        return new AnalyzeCommand(mapped);
+        return new AnalyzeCommand(mapped,goals);
     }
 
     /**

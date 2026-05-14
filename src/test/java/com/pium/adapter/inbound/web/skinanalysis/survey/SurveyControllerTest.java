@@ -1,5 +1,6 @@
 package com.pium.adapter.inbound.web.skinanalysis.survey;
 
+import com.pium.application.skinanalysis.survey.provided.AnalyzeSkinAnalysis;
 import com.pium.application.skinanalysis.survey.provided.GetSurveySpec;
 import com.pium.application.skinanalysis.survey.provided.dto.SurveySpecView;
 import com.pium.fixture.SurveySpecViewFixture;
@@ -29,6 +30,9 @@ class SurveyControllerTest {
 
     @MockitoBean
     private GetSurveySpec getSurveySpec;
+
+    @MockitoBean
+    private AnalyzeSkinAnalysis analyzeSkinAnalysis;
 
 
     @Test

@@ -37,16 +37,12 @@ class SkinAnalysisResultTest {
     void 피부분석결과_생성_검증() {
         SkinAnalysisResult result = SkinAnalysisResult.create(
                 userId,
-                rulesVersion,
-                skinMetricScores,
-                requiredIngredients
+                skinMetricScores
         );
 
         assertThat(result.getId()).isNotNull();
         assertThat(result.getUserId()).isEqualTo(userId);
-        assertThat(result.getRulesVersion()).isEqualTo(rulesVersion);
         assertThat(result.getSkinMetricScores()).isEqualTo(skinMetricScores);
-        assertThat(result.getRequiredIngredients()).isEqualTo(requiredIngredients);
         assertThat(result.getCreatedAt()).isEqualTo(result.getUpdatedAt());
     }
 
@@ -59,18 +55,14 @@ class SkinAnalysisResultTest {
         SkinAnalysisResult reconstituted = SkinAnalysisResult.reconstitute(
                 id,
                 userId,
-                rulesVersion,
                 skinMetricScores,
-                requiredIngredients,
                 createdAt,
                 updatedAt
         );
 
         assertThat(reconstituted.getId()).isEqualTo(id);
         assertThat(reconstituted.getUserId()).isEqualTo(userId);
-        assertThat(reconstituted.getRulesVersion()).isEqualTo(rulesVersion);
         assertThat(reconstituted.getSkinMetricScores()).isEqualTo(skinMetricScores);
-        assertThat(reconstituted.getRequiredIngredients()).isEqualTo(requiredIngredients);
         assertThat(reconstituted.getCreatedAt()).isEqualTo(createdAt);
         assertThat(reconstituted.getUpdatedAt()).isEqualTo(updatedAt);
     }
@@ -79,18 +71,6 @@ class SkinAnalysisResultTest {
     void 피부상태점수목록_비어있으면_예외_검증() {
         assertThatThrownBy(() -> SkinAnalysisResult.create(
                 userId,
-                rulesVersion,
-                List.of(),
-                requiredIngredients
-        )).isInstanceOf(SkinAnalysisException.class);
-    }
-
-    @Test
-    void 필요성분군목록_비어있으면_예외_검증() {
-        assertThatThrownBy(() -> SkinAnalysisResult.create(
-                userId,
-                rulesVersion,
-                skinMetricScores,
                 List.of()
         )).isInstanceOf(SkinAnalysisException.class);
     }

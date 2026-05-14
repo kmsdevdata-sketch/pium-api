@@ -1,8 +1,9 @@
 package com.pium.adapter.inbound.web.skinanalysis.survey;
 
-import com.pium.application.skinanalysis.survey.provided.AnalyzeSkinAnalysis;
-import com.pium.application.skinanalysis.survey.provided.GetSurveySpec;
-import com.pium.application.skinanalysis.survey.provided.dto.SurveySpecView;
+import com.pium.adapter.inbound.web.skinanalysis.SurveyController;
+import com.pium.application.skinanalysis.analyze.provided.AnalyzeSkinAnalysis;
+import com.pium.application.skinanalysis.spec.provided.GetSurveySpec;
+import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
 import com.pium.fixture.SurveySpecViewFixture;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

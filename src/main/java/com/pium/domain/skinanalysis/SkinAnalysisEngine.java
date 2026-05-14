@@ -1,6 +1,6 @@
 package com.pium.domain.skinanalysis;
 
-import com.pium.application.skinanalysis.survey.required.dto.NormalizeSurveySubmission;
+import com.pium.application.skinanalysis.analyze.required.dto.NormalizeSurveySubmission;
 import com.pium.domain.skinanalysis.model.SkinAnalysisResult;
 
 /**

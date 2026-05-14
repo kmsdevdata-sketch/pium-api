@@ -1,15 +1,13 @@
 package com.pium.application.skinanalysis.survey.service;
 
-import com.pium.application.skinanalysis.survey.exception.SurveyApplicationErrorCode;
-import com.pium.application.skinanalysis.survey.exception.SurveyApplicationException;
-import com.pium.application.skinanalysis.survey.provided.dto.SurveySpecView;
-import com.pium.application.skinanalysis.survey.required.LoadSurveySpecPort;
+import com.pium.application.skinanalysis.exception.SurveyApplicationErrorCode;
+import com.pium.application.skinanalysis.exception.SurveyApplicationException;
+import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
+import com.pium.application.skinanalysis.spec.required.LoadSurveySpecPort;
+import com.pium.application.skinanalysis.spec.service.GetSurveySpecService;
 import com.pium.fixture.SurveySpecViewFixture;
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
-import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;

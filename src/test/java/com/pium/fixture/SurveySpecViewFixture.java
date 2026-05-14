@@ -1,6 +1,6 @@
 package com.pium.fixture;
 
-import com.pium.application.skinanalysis.survey.provided.dto.SurveySpecView;
+import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
 
 import java.util.List;
 

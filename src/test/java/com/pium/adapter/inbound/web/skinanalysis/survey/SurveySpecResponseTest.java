@@ -1,6 +1,7 @@
 package com.pium.adapter.inbound.web.skinanalysis.survey;
 
-import com.pium.application.skinanalysis.survey.provided.dto.SurveySpecView;
+import com.pium.adapter.inbound.web.skinanalysis.spec.SurveySpecResponse;
+import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
 import com.pium.fixture.SurveySpecViewFixture;
 import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;

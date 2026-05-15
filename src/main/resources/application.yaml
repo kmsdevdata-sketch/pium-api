@@ -1,3 +1,6 @@
 spring:
   application:
     name: pium
+auth:
+  toss:
+    base-url: https://apps-in-toss-api.toss.im

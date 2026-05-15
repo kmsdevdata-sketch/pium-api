@@ -1,9 +1,11 @@
-package com.pium.adapter.outbound.auth;
+package com.pium.adapter.outbound.auth.toss;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record TossTokenResponse(
+public record TossUserResponse(
         String resultType,
         Success success,
         Error error
@@ -11,11 +13,17 @@ public record TossTokenResponse(
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record Success(
-            String accessToken,
-            String refreshToken,
-            String tokenType,
-            long expiresIn,
-            String scope
+            Long userKey,
+            String scope,
+            List<String> agreedTerms,
+            String name,
+            String phone,
+            String birthday,
+            String ci,
+            String di,
+            String gender,
+            String nationality,
+            String email
     ) {
     }
 

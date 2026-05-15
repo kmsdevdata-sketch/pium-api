@@ -4,3 +4,8 @@ spring:
 auth:
   toss:
     base-url: https://apps-in-toss-api.toss.im
+    decrypt-key: ${TOSS_DECRYPT_KEY}
+    aad: ${TOSS_AAD:TOSS}
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-expiration-seconds: 3600

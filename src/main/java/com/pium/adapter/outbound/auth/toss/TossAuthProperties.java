@@ -1,4 +1,4 @@
-package com.pium.adapter.outbound.auth;
+package com.pium.adapter.outbound.auth.toss;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -7,6 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "auth.toss")
 public record TossAuthProperties(
-        String baseUrl
+        String baseUrl,
+        String decryptKey,
+        String aad
 ) {
 }

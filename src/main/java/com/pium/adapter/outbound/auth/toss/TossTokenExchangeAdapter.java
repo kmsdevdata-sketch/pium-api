@@ -1,4 +1,4 @@
-package com.pium.adapter.outbound.auth;
+package com.pium.adapter.outbound.auth.toss;
 
 import com.pium.adapter.outbound.auth.exception.AuthAdapterErrorCode;
 import com.pium.adapter.outbound.auth.exception.AuthAdapterException;

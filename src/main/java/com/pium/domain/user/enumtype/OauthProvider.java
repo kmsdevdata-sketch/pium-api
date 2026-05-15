@@ -4,6 +4,7 @@ import com.pium.domain.user.exception.UserErrorCode;
 import com.pium.domain.user.exception.UserException;
 
 public enum OauthProvider {
+    TOSS,
     GOOGLE,
     KAKAO;
 
@@ -13,6 +14,7 @@ public enum OauthProvider {
         }
 
         return switch (provider.trim().toLowerCase()) {
+            case "toss" -> TOSS;
             case "google" -> GOOGLE;
             case "kakao" -> KAKAO;
             default -> throw new UserException(UserErrorCode.UNSUPPORTED_OAUTH_PROVIDER);

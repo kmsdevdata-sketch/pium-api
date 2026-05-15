@@ -1,6 +1,7 @@
 package com.pium.adapter.inbound.web.skinanalysis.analyze;
 
 import com.pium.application.skinanalysis.analyze.dto.AnalyzeCommand;
+import com.pium.domain.user.vo.UserId;
 
 import java.util.List;
 
@@ -12,11 +13,11 @@ public record AnalyzeSurveyRequest(
         List<String> goals
 ) {
 
-    public AnalyzeCommand toCommand() {
+    public AnalyzeCommand toCommand(UserId userId) {
         List<AnalyzeCommand.Answer> mapped = answers.stream()
                 .map(a -> new AnalyzeCommand.Answer(a.questionId(), a.selectedOptionCodes()))
                 .toList();
-        return new AnalyzeCommand(mapped,goals);
+        return new AnalyzeCommand(userId, mapped, goals);
     }
 
     /**

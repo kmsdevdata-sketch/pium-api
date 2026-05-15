@@ -7,9 +7,8 @@ import java.util.List;
  * - 엔진이 UI응답 형식을 몰라도 되도록 내부 표준 계약으로 분리
  */
 public record NormalizeSurveySubmission(
-        List<NormalizedAnswer> answers,
-        List<String> goals
-        ) {
+        List<NormalizedAnswer> answers
+) {
 
 
     /**
@@ -24,4 +23,3 @@ public record NormalizeSurveySubmission(
     ) {
     }
 }
-

@@ -1,5 +1,6 @@
 package com.pium.adapter.inbound.web.skinanalysis;
 
+import com.pium.adapter.inbound.web.auth.AuthenticatedUserIdResolver;
 import com.pium.adapter.inbound.response.ApiResponse;
 import com.pium.adapter.inbound.web.skinanalysis.analyze.AnalyzeSurveyRequest;
 import com.pium.adapter.inbound.web.skinanalysis.analyze.AnalyzeSurveyResponse;
@@ -9,6 +10,7 @@ import com.pium.application.skinanalysis.spec.provided.GetSurveySpec;
 import com.pium.application.skinanalysis.analyze.dto.AnalyzeResultView;
 import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -18,6 +20,7 @@ public class SurveyController {
 
     private final GetSurveySpec getSurveySpec;
     private final AnalyzeSkinAnalysis analyzeSkinAnalysis;
+    private final AuthenticatedUserIdResolver authenticatedUserIdResolver;
 
     /**
      * 설문 조회 API
@@ -33,9 +36,12 @@ public class SurveyController {
      */
     @PostMapping("/analyze")
     public ApiResponse<AnalyzeSurveyResponse> analyze(
-            @RequestBody AnalyzeSurveyRequest request
+            @RequestBody AnalyzeSurveyRequest request,
+            Authentication authentication
     ) {
-        AnalyzeResultView response = analyzeSkinAnalysis.analyze(request.toCommand());
+        AnalyzeResultView response = analyzeSkinAnalysis.analyze(
+                request.toCommand(authenticatedUserIdResolver.resolve(authentication))
+        );
         return ApiResponse.ok(AnalyzeSurveyResponse.from(response));
     }
 }

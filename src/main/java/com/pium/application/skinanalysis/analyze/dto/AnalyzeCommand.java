@@ -1,5 +1,7 @@
 package com.pium.application.skinanalysis.analyze.dto;
 
+import com.pium.domain.user.vo.UserId;
+
 import java.util.List;
 
 /**
@@ -9,6 +11,7 @@ import java.util.List;
  * @param goals 사용자가 선택한 고민목록
  */
 public record AnalyzeCommand(
+        UserId userId,
         List<Answer> answers,
         List<String> goals
 ) {

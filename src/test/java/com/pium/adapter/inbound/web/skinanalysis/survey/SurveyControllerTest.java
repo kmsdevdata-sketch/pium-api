@@ -1,12 +1,13 @@
 package com.pium.adapter.inbound.web.skinanalysis.survey;
 
+import com.pium.adapter.inbound.web.auth.AuthenticatedUserIdResolver;
 import com.pium.adapter.inbound.web.skinanalysis.SurveyController;
-import com.pium.adapter.outbound.skinanalysis.fixture.AnalyzeCommandFixture;
 import com.pium.application.skinanalysis.analyze.dto.AnalyzeCommand;
 import com.pium.application.skinanalysis.analyze.dto.AnalyzeResultView;
 import com.pium.application.skinanalysis.analyze.provided.AnalyzeSkinAnalysis;
 import com.pium.application.skinanalysis.spec.provided.GetSurveySpec;
 import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
+import com.pium.domain.user.vo.UserId;
 import com.pium.fixture.AnalyzeResultViewFixture;
 import com.pium.fixture.SurveySpecViewFixture;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,8 @@ class SurveyControllerTest {
     @MockitoBean
     private AnalyzeSkinAnalysis analyzeSkinAnalysis;
 
+    @MockitoBean
+    private AuthenticatedUserIdResolver authenticatedUserIdResolver;
 
     @Test
     void getSurveySpec_returnsApiResponse() throws Exception {
@@ -67,6 +70,7 @@ class SurveyControllerTest {
     void analyze_returnsApiResponse() throws Exception {
         AnalyzeResultView view = AnalyzeResultViewFixture.createAnalyzeResultView();
 
+        given(authenticatedUserIdResolver.resolve(any())).willReturn(UserId.of("user-test-001"));
         given(analyzeSkinAnalysis.analyze(any(AnalyzeCommand.class))).willReturn(view);
 
         String requestJson = """
@@ -92,6 +96,7 @@ class SurveyControllerTest {
                 .andExpect(jsonPath("$.data.skinMetricScores[1].metricKey").value("BARRIER"))
                 .andExpect(jsonPath("$.data.skinMetricScores[1].score").value(60));
 
+        verify(authenticatedUserIdResolver, times(1)).resolve(any());
         verify(analyzeSkinAnalysis, times(1)).analyze(any(AnalyzeCommand.class));
     }
 

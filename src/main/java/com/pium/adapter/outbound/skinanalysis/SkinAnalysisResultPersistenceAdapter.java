@@ -48,6 +48,20 @@ public class SkinAnalysisResultPersistenceAdapter implements SaveSkinAnalysisRes
 
     @Override
     @Transactional(readOnly = true)
+    public long countByUserId(UserId userId) {
+        return skinAnalysisResultJpaRepository.countByUserId(userId.value());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<SkinAnalysisResult> loadAll(UserId userId) {
+        return skinAnalysisResultJpaRepository.findAllByUserIdOrderByCreatedAtDesc(userId.value()).stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public Optional<SkinAnalysisResult> loadLatest(UserId userId) {
         return skinAnalysisResultJpaRepository.findTopByUserIdOrderByCreatedAtDesc(userId.value())
                 .map(this::toDomain);

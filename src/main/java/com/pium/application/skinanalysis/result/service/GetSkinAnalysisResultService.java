@@ -2,6 +2,7 @@ package com.pium.application.skinanalysis.result.service;
 
 import com.pium.application.skinanalysis.exception.SurveyApplicationErrorCode;
 import com.pium.application.skinanalysis.exception.SurveyApplicationException;
+import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultListView;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultView;
 import com.pium.application.skinanalysis.result.provided.GetSkinAnalysisResult;
 import com.pium.application.skinanalysis.result.required.LoadSkinAnalysisResultPort;
@@ -20,6 +21,16 @@ public class GetSkinAnalysisResultService implements GetSkinAnalysisResult {
 
     private final LoadSkinAnalysisResultPort loadSkinAnalysisResultPort;
     private final SkinAnalysisResultViewComposer skinAnalysisResultViewComposer;
+
+    @Override
+    public SkinAnalysisResultListView list(UserId userId) {
+        return new SkinAnalysisResultListView(
+                loadSkinAnalysisResultPort.countByUserId(userId),
+                loadSkinAnalysisResultPort.loadAll(userId).stream()
+                        .map(skinAnalysisResultViewComposer::composeListItem)
+                        .toList()
+        );
+    }
 
     @Override
     public SkinAnalysisResultView getLatest(UserId userId) {

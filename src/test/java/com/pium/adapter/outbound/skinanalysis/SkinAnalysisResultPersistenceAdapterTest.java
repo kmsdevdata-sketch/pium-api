@@ -108,6 +108,37 @@ class SkinAnalysisResultPersistenceAdapterTest {
     }
 
     @Test
+    void loadAll_사용자의_결과목록을_최신순으로_조회한다() {
+        UserId userId = SkinAnalysisResultFixture.createUserId();
+        SkinAnalysisResult older = SkinAnalysisResult.reconstitute(
+                SkinAnalysisResultId.of("result-list-older"),
+                userId,
+                SkinAnalysisResultFixture.createSkinMetricScores(),
+                SkinAnalysisResultFixture.createGoals(),
+                LocalDateTime.now().minusDays(2),
+                LocalDateTime.now().minusDays(2)
+        );
+        SkinAnalysisResult latest = SkinAnalysisResult.reconstitute(
+                SkinAnalysisResultId.of("result-list-latest"),
+                userId,
+                SkinAnalysisResultFixture.createSkinMetricScores(),
+                SkinAnalysisResultFixture.createGoals(),
+                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now().minusDays(1)
+        );
+
+        persistenceAdapter.save(older);
+        persistenceAdapter.save(latest);
+
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(persistenceAdapter.loadAll(userId))
+                .extracting(result -> result.getId().value())
+                .containsExactly("result-list-latest", "result-list-older");
+    }
+
+    @Test
     void load_특정_결과를_조회한다() {
         SkinAnalysisResult result = SkinAnalysisResult.create(
                 SkinAnalysisResultFixture.createUserId(),

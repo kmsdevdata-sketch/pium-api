@@ -3,6 +3,7 @@ package com.pium.adapter.outbound.skinanalysis.persistence.repository;
 import com.pium.adapter.outbound.skinanalysis.persistence.entity.SkinAnalysisResultEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -10,7 +11,11 @@ import java.util.Optional;
  */
 public interface SkinAnalysisResultJpaRepository extends JpaRepository<SkinAnalysisResultEntity, String> {
 
+    long countByUserId(String userId);
+
     boolean existsByUserId(String userId);
+
+    List<SkinAnalysisResultEntity> findAllByUserIdOrderByCreatedAtDesc(String userId);
 
     Optional<SkinAnalysisResultEntity> findTopByUserIdOrderByCreatedAtDesc(String userId);
 

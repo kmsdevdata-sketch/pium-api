@@ -1,5 +1,6 @@
 package com.pium.application.skinanalysis.result.service;
 
+import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultListView;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultView;
 import com.pium.domain.skinanalysis.enumtype.SkinMetric;
 import com.pium.domain.skinanalysis.model.SkinAnalysisResult;
@@ -36,6 +37,16 @@ public class SkinAnalysisResultViewComposer {
             SkinMetric.DRYNESS,
             SkinMetric.OILINESS,
             SkinMetric.BLEMISH_PRONENESS,
+            SkinMetric.PIGMENTATION_TONE,
+            SkinMetric.AGING_SIGNS
+    );
+
+    private static final List<SkinMetric> SCORE_PRIORITY = List.of(
+            SkinMetric.BARRIER,
+            SkinMetric.SENSITIVITY,
+            SkinMetric.BLEMISH_PRONENESS,
+            SkinMetric.DRYNESS,
+            SkinMetric.OILINESS,
             SkinMetric.PIGMENTATION_TONE,
             SkinMetric.AGING_SIGNS
     );
@@ -80,6 +91,37 @@ public class SkinAnalysisResultViewComposer {
                 skinMetricScores,
                 categoryDetails,
                 summary(highMetrics, scoredMetricMap)
+        );
+    }
+
+    public SkinAnalysisResultListView.ItemView composeListItem(SkinAnalysisResult result) {
+        Map<SkinMetric, ScoredMetric> scoredMetricMap = toScoredMetricMap(result.getSkinMetricScores());
+        List<ScoredMetric> orderedMetrics = METRIC_ORDER.stream()
+                .map(scoredMetricMap::get)
+                .toList();
+        List<SkinMetric> highMetrics = orderedMetrics.stream()
+                .filter(scoredMetric -> scoredMetric.level() == MetricLevel.HIGH)
+                .map(ScoredMetric::metric)
+                .sorted(Comparator.comparingInt(HIGH_PRIORITY::indexOf))
+                .toList();
+
+        ScoredMetric topMetric = orderedMetrics.stream()
+                .sorted(
+                        Comparator.comparingInt(ScoredMetric::score).reversed()
+                                .thenComparingInt(scoredMetric -> SCORE_PRIORITY.indexOf(scoredMetric.metric()))
+                )
+                .findFirst()
+                .orElseThrow();
+
+        return new SkinAnalysisResultListView.ItemView(
+                result.getId().value(),
+                result.getCreatedAt(),
+                oneLiner(highMetrics),
+                new SkinAnalysisResultListView.TopMetricView(
+                        topMetric.metric().name(),
+                        labelOf(topMetric.metric()),
+                        topMetric.level().name()
+                )
         );
     }
 
@@ -420,6 +462,18 @@ public class SkinAnalysisResultViewComposer {
                 .filter(metric -> metric != primary)
                 .findFirst()
                 .orElse(null);
+    }
+
+    private String labelOf(SkinMetric metric) {
+        return switch (metric) {
+            case DRYNESS -> "건조";
+            case BARRIER -> "장벽";
+            case OILINESS -> "유분";
+            case BLEMISH_PRONENESS -> "트러블";
+            case SENSITIVITY -> "민감";
+            case PIGMENTATION_TONE -> "색소·톤";
+            case AGING_SIGNS -> "노화";
+        };
     }
 
     private String pairKey(SkinMetric first, SkinMetric second) {

@@ -1,6 +1,7 @@
 package com.pium.application.skinanalysis.result.service;
 
 import com.pium.application.skinanalysis.exception.SurveyApplicationException;
+import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultListView;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultView;
 import com.pium.application.skinanalysis.result.required.LoadSkinAnalysisResultPort;
 import com.pium.domain.skinanalysis.enumtype.SkinMetric;
@@ -20,6 +21,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Comparator;
+
 class GetSkinAnalysisResultServiceTest {
 
     private final LoadSkinAnalysisResultPort loadSkinAnalysisResultPort = mock(LoadSkinAnalysisResultPort.class);
@@ -28,6 +31,62 @@ class GetSkinAnalysisResultServiceTest {
             loadSkinAnalysisResultPort,
             skinAnalysisResultViewComposer
     );
+
+    @Test
+    void list_최신순으로_목록을_조합한다() {
+        UserId userId = UserId.of("user-test-000");
+        SkinAnalysisResult latest = SkinAnalysisResult.reconstitute(
+                SkinAnalysisResultId.of("result-latest"),
+                userId,
+                List.of(
+                        SkinMetricScore.of(SkinMetric.DRYNESS, 74),
+                        SkinMetricScore.of(SkinMetric.BARRIER, 62),
+                        SkinMetricScore.of(SkinMetric.OILINESS, 31),
+                        SkinMetricScore.of(SkinMetric.BLEMISH_PRONENESS, 85),
+                        SkinMetricScore.of(SkinMetric.SENSITIVITY, 44),
+                        SkinMetricScore.of(SkinMetric.PIGMENTATION_TONE, 28),
+                        SkinMetricScore.of(SkinMetric.AGING_SIGNS, 27)
+                ),
+                List.of("Q11_1"),
+                LocalDateTime.now(),
+                LocalDateTime.now()
+        );
+        SkinAnalysisResult older = SkinAnalysisResult.reconstitute(
+                SkinAnalysisResultId.of("result-older"),
+                userId,
+                List.of(
+                        SkinMetricScore.of(SkinMetric.DRYNESS, 33),
+                        SkinMetricScore.of(SkinMetric.BARRIER, 22),
+                        SkinMetricScore.of(SkinMetric.OILINESS, 39),
+                        SkinMetricScore.of(SkinMetric.BLEMISH_PRONENESS, 24),
+                        SkinMetricScore.of(SkinMetric.SENSITIVITY, 18),
+                        SkinMetricScore.of(SkinMetric.PIGMENTATION_TONE, 23),
+                        SkinMetricScore.of(SkinMetric.AGING_SIGNS, 81)
+                ),
+                List.of("Q11_2"),
+                LocalDateTime.now().minusDays(1),
+                LocalDateTime.now().minusDays(1)
+        );
+
+        List<SkinAnalysisResult> results = List.of(latest, older).stream()
+                .sorted(Comparator.comparing(SkinAnalysisResult::getCreatedAt).reversed())
+                .toList();
+
+        when(loadSkinAnalysisResultPort.countByUserId(userId)).thenReturn(2L);
+        when(loadSkinAnalysisResultPort.loadAll(userId)).thenReturn(results);
+
+        SkinAnalysisResultListView view = service.list(userId);
+
+        assertThat(view.historyCount()).isEqualTo(2L);
+        assertThat(view.results()).hasSize(2);
+        assertThat(view.results().get(0).resultId()).isEqualTo("result-latest");
+        assertThat(view.results().get(0).oneLiner()).contains("건조하면서 트러블도 반복");
+        assertThat(view.results().get(0).topMetric().key()).isEqualTo("BLEMISH_PRONENESS");
+        assertThat(view.results().get(0).topMetric().label()).isEqualTo("트러블");
+        assertThat(view.results().get(0).topMetric().level()).isEqualTo("HIGH");
+        verify(loadSkinAnalysisResultPort).countByUserId(userId);
+        verify(loadSkinAnalysisResultPort).loadAll(userId);
+    }
 
     @Test
     void getLatest_안전게이트가_있으면_HOME기준_텍스트를_조합한다() {

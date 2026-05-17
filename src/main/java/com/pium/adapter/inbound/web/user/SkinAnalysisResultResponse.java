@@ -1,13 +1,13 @@
 package com.pium.adapter.inbound.web.user;
 
+import com.pium.adapter.inbound.response.ApiDateTimeFormatter;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultView;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public record SkinAnalysisResultResponse(
         String resultId,
-        LocalDateTime createdAt,
+        String createdAt,
         String oneLiner,
         List<SkinMetricScoreResponse> skinMetricScores,
         List<CategoryDetailResponse> categoryDetails,
@@ -17,7 +17,7 @@ public record SkinAnalysisResultResponse(
     public static SkinAnalysisResultResponse from(SkinAnalysisResultView view) {
         return new SkinAnalysisResultResponse(
                 view.resultId(),
-                view.createdAt(),
+                ApiDateTimeFormatter.format(view.createdAt()),
                 view.oneLiner(),
                 view.skinMetricScores().stream()
                         .map(score -> new SkinMetricScoreResponse(

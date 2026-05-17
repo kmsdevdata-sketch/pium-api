@@ -9,3 +9,14 @@ spring:
       ddl-auto: create-drop
   flyway:
     enabled: false
+
+auth:
+  toss:
+    base-url: https://apps-in-toss-api.toss.im
+    decrypt-key: MDEyMzQ1Njc4OWFiY2RlZjAxMjM0NTY3ODlhYmNkZWY=
+    aad: TOSS
+    mtls-cert-path:
+    mtls-key-path:
+  jwt:
+    secret: test-jwt-secret-key-must-be-long-enough-123
+    access-token-expiration-seconds: 3600

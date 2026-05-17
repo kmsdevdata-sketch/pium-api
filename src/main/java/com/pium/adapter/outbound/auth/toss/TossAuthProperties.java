@@ -9,6 +9,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record TossAuthProperties(
         String baseUrl,
         String decryptKey,
-        String aad
+        String aad,
+        String mtlsCertPath,
+        String mtlsKeyPath
 ) {
 }

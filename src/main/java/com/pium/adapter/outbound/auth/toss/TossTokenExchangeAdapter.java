@@ -6,6 +6,7 @@ import com.pium.application.auth.required.ExchangeTossTokenPort;
 import com.pium.application.auth.required.dto.TossAccessToken;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -15,12 +16,13 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class TossTokenExchangeAdapter implements ExchangeTossTokenPort {
 
-    private final RestClient.Builder restClientBuilder;
+    @Qualifier("tossRestClient")
+    private final RestClient tossRestClient;
     private final TossAuthProperties tossAuthProperties;
 
     @Override
     public TossAccessToken exchange(String authorizationCode, String referrer) {
-        TossTokenResponse response = restClientBuilder.build()
+        TossTokenResponse response = tossRestClient
                 .post()
                 .uri(tossAuthProperties.baseUrl() + "/api-partner/v1/apps-in-toss/user/oauth2/generate-token")
                 .contentType(MediaType.APPLICATION_JSON)

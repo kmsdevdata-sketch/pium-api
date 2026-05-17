@@ -1,0 +1,3 @@
+app:
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:https://toss.pium.app}

@@ -5,6 +5,7 @@ import com.pium.adapter.outbound.auth.exception.AuthAdapterException;
 import com.pium.application.auth.required.LoadTossUserPort;
 import com.pium.application.auth.required.dto.TossAuthenticatedUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
@@ -24,12 +25,13 @@ public class TossUserLoadAdapter implements LoadTossUserPort {
     private static final int IV_LENGTH = 12;
     private static final int AUTH_TAG_BIT_LENGTH = 16 * Byte.SIZE;
 
-    private final RestClient.Builder restClientBuilder;
+    @Qualifier("tossRestClient")
+    private final RestClient tossRestClient;
     private final TossAuthProperties tossAuthProperties;
 
     @Override
     public TossAuthenticatedUser load(String accessToken) {
-        TossUserResponse response = restClientBuilder.build()
+        TossUserResponse response = tossRestClient
                 .get()
                 .uri(tossAuthProperties.baseUrl() + "/api-partner/v1/apps-in-toss/user/oauth2/login-me")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)

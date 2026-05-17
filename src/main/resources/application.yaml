@@ -1,11 +1,28 @@
 spring:
   application:
     name: pium
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/pium?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    username: ${DB_USERNAME:pium_user}
+    password: ${DB_PASSWORD:pium_pass}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:validate}
+    open-in-view: false
+
+  flyway:
+    enabled: ${FLYWAY_ENABLED:true}
+
 auth:
   toss:
-    base-url: https://apps-in-toss-api.toss.im
+    base-url: ${TOSS_BASE_URL:https://apps-in-toss-api.toss.im}
     decrypt-key: ${TOSS_DECRYPT_KEY}
     aad: ${TOSS_AAD:TOSS}
+    mtls-cert-path: ${TOSS_MTLS_CERT_PATH:.secrets/toss-mtls/pium_public.crt}
+    mtls-key-path: ${TOSS_MTLS_KEY_PATH:.secrets/toss-mtls/pium_private.key}
   jwt:
     secret: ${JWT_SECRET}
-    access-token-expiration-seconds: 3600
+    access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_SECONDS:3600}

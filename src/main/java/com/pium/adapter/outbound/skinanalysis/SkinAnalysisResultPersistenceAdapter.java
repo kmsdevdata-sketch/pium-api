@@ -1,14 +1,23 @@
 package com.pium.adapter.outbound.skinanalysis;
 
 import com.pium.adapter.outbound.skinanalysis.persistence.entity.SkinAnalysisResultEntity;
+import com.pium.adapter.outbound.skinanalysis.persistence.entity.SkinMetricScoreEntity;
 import com.pium.adapter.outbound.skinanalysis.persistence.mapper.PersistenceBundle;
 import com.pium.adapter.outbound.skinanalysis.persistence.repository.SkinAnalysisResultJpaRepository;
 import com.pium.adapter.outbound.skinanalysis.persistence.repository.SkinMetricScoreJpaRepository;
 import com.pium.application.skinanalysis.analyze.required.SaveSkinAnalysisResultPort;
+import com.pium.application.skinanalysis.result.required.LoadSkinAnalysisResultPort;
+import com.pium.application.user.bootstrap.required.CheckUserDiagnosisPort;
 import com.pium.domain.skinanalysis.model.SkinAnalysisResult;
+import com.pium.domain.skinanalysis.vo.SkinAnalysisResultId;
+import com.pium.domain.skinanalysis.vo.SkinMetricScore;
+import com.pium.domain.user.vo.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.Optional;
 
 /**
  * Outbound Adapter
@@ -19,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Transactional
 @RequiredArgsConstructor
-public class SkinAnalysisResultPersistenceAdapter implements SaveSkinAnalysisResultPort {
+public class SkinAnalysisResultPersistenceAdapter implements SaveSkinAnalysisResultPort, CheckUserDiagnosisPort, LoadSkinAnalysisResultPort {
 
     private final SkinAnalysisResultJpaRepository skinAnalysisResultJpaRepository;
     private final SkinMetricScoreJpaRepository skinMetricScoreJpaRepository;
@@ -30,5 +39,43 @@ public class SkinAnalysisResultPersistenceAdapter implements SaveSkinAnalysisRes
         PersistenceBundle bundle = SkinAnalysisResultEntity.from(result);
         skinAnalysisResultJpaRepository.save(bundle.entity());
         skinMetricScoreJpaRepository.saveAll(bundle.scoreEntities());
+    }
+
+    @Override
+    public boolean existsByUserId(UserId userId) {
+        return skinAnalysisResultJpaRepository.existsByUserId(userId.value());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<SkinAnalysisResult> loadLatest(UserId userId) {
+        return skinAnalysisResultJpaRepository.findTopByUserIdOrderByCreatedAtDesc(userId.value())
+                .map(this::toDomain);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Optional<SkinAnalysisResult> load(UserId userId, SkinAnalysisResultId resultId) {
+        return skinAnalysisResultJpaRepository.findByResultIdAndUserId(resultId.value(), userId.value())
+                .map(this::toDomain);
+    }
+
+    private SkinAnalysisResult toDomain(SkinAnalysisResultEntity entity) {
+        List<SkinMetricScore> scores = skinMetricScoreJpaRepository.findAllByResultResultIdOrderByIdAsc(entity.getResultId()).stream()
+                .map(this::toDomainScore)
+                .toList();
+
+        return SkinAnalysisResult.reconstitute(
+                SkinAnalysisResultId.of(entity.getResultId()),
+                UserId.of(entity.getUserId()),
+                scores,
+                entity.getGoals(),
+                entity.getCreatedAt(),
+                entity.getUpdatedAt()
+        );
+    }
+
+    private SkinMetricScore toDomainScore(SkinMetricScoreEntity entity) {
+        return SkinMetricScore.of(entity.getMetric(), entity.getScore());
     }
 }

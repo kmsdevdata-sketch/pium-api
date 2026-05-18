@@ -1,0 +1,10 @@
+.git
+.gitignore
+.gradle
+.idea
+build
+out
+src/test
+README.md
+HELP.md
+docs

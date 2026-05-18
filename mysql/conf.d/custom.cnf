@@ -1,0 +1,5 @@
+[mysqld]
+max_connections=40
+innodb_buffer_pool_size=256M
+tmp_table_size=32M
+max_heap_table_size=32M

@@ -69,10 +69,6 @@ docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" up -d mysql
 docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" pull "${target_service}"
 docker compose --env-file "${ENV_FILE}" -f "${COMPOSE_FILE}" up -d --no-deps "${target_service}"
 
-set -a
-source "${ENV_FILE}"
-set +a
-
 HEALTH_URL="http://127.0.0.1:${target_port}/actuator/health"
 
 for i in {1..60}; do

@@ -6,12 +6,14 @@ import com.pium.application.user.home.dto.UserHomeView;
 import java.util.List;
 
 public record UserHomeResponse(
+        String userName,
         long historyCount,
         LatestDiagnosisResponse latestDiagnosis
 ) {
 
     public static UserHomeResponse from(UserHomeView view) {
         return new UserHomeResponse(
+                view.userName(),
                 view.historyCount(),
                 view.latestDiagnosis() == null ? null : new LatestDiagnosisResponse(
                         view.latestDiagnosis().id(),

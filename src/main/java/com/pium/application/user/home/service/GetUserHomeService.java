@@ -1,11 +1,15 @@
 package com.pium.application.user.home.service;
 
+import com.pium.application.auth.required.LoadUserProfilePort;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultView;
 import com.pium.application.skinanalysis.result.required.LoadSkinAnalysisResultPort;
 import com.pium.application.skinanalysis.result.service.SkinAnalysisResultViewComposer;
 import com.pium.application.user.home.dto.UserHomeView;
 import com.pium.application.user.home.provided.GetUserHome;
 import com.pium.domain.skinanalysis.model.SkinAnalysisResult;
+import com.pium.domain.user.exception.UserErrorCode;
+import com.pium.domain.user.exception.UserException;
+import com.pium.domain.user.model.UserProfile;
 import com.pium.domain.user.vo.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +24,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GetUserHomeService implements GetUserHome {
 
+    private final LoadUserProfilePort loadUserProfilePort;
     private final LoadSkinAnalysisResultPort loadSkinAnalysisResultPort;
     private final SkinAnalysisResultViewComposer skinAnalysisResultViewComposer;
 
@@ -27,10 +32,14 @@ public class GetUserHomeService implements GetUserHome {
     public UserHomeView getUserHome(UserId userId) {
         long historyCount = loadSkinAnalysisResultPort.countByUserId(userId);
 
+        String userName = loadUserProfilePort.findByUserId(userId)
+                .map(UserProfile::getNickname)
+                .orElseThrow(() -> new UserException(UserErrorCode.INVALID_USER_PROFILE_ID));
+
         return loadSkinAnalysisResultPort.loadLatest(userId)
                 .map(this::toLatestDiagnosisView)
-                .map(latestDiagnosis -> new UserHomeView(historyCount, latestDiagnosis))
-                .orElseGet(() -> new UserHomeView(historyCount, null));
+                .map(latestDiagnosis -> new UserHomeView(userName,historyCount, latestDiagnosis))
+                .orElseGet(() -> new UserHomeView(userName,historyCount, null));
     }
 
     private UserHomeView.LatestDiagnosisView toLatestDiagnosisView(SkinAnalysisResult result) {

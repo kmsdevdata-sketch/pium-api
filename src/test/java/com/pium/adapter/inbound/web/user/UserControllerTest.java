@@ -74,6 +74,7 @@ class UserControllerTest {
     void getUserHome_returnsApiResponse() throws Exception {
         given(getUserHome.getUserHome(UserId.of("user-test-001")))
                 .willReturn(new UserHomeView(
+                        "피움닉네임",
                         12L,
                         new UserHomeView.LatestDiagnosisView(
                                 "result-001",
@@ -93,6 +94,7 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.userName").value("피움닉네임"))
                 .andExpect(jsonPath("$.data.historyCount").value(12))
                 .andExpect(jsonPath("$.data.latestDiagnosis.id").value("result-001"))
                 .andExpect(jsonPath("$.data.latestDiagnosis.createdAt").value("2026-05-17T06:12:41Z"))
@@ -103,7 +105,7 @@ class UserControllerTest {
     @Test
     void getUserBootstrap_returnsApiResponse() throws Exception {
         given(getUserBootstrap.getUserBootstrap(UserId.of("user-test-001")))
-                .willReturn(new UserBootstrapView(true, UserBootstrapView.EntryPoint.HOME));
+                .willReturn(new UserBootstrapView("피움닉네임", true, UserBootstrapView.EntryPoint.HOME));
 
         mockMvc.perform(get("/api/v1/users/me/bootstrap")
                         .with(user(AuthFixture.createAuthenticatedUser(UserId.of("user-test-001"))))
@@ -111,6 +113,7 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.userName").value("피움닉네임"))
                 .andExpect(jsonPath("$.data.hasDiagnosis").value(true))
                 .andExpect(jsonPath("$.data.entryPoint").value("HOME"));
     }

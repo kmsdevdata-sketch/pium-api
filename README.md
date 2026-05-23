@@ -17,8 +17,8 @@
 
 <p align="center">
   <img src="docs/assets/pium-home.PNG" width="240" alt="피움 홈 화면" />
-  <img src="docs/assets/pium-survey.png" width="240" alt="피움 설문 화면" />
-  <img src="docs/assets/pium-result.png" width="240" alt="피움 결과 화면" />
+  <img src="docs/assets/pium-survey.PNG" width="240" alt="피움 설문 화면" />
+  <img src="docs/assets/pium-result.PNG" width="240" alt="피움 결과 화면" />
 </p>
 
 ---

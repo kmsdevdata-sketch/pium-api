@@ -10,10 +10,10 @@ Product 도메인은 제품 및 성분 정보를 관리하고,
 ### 2. Responsibility
 
 - 제품 정보 관리
-- 성분 정보 관리
-- 성분군 분류 관리
-- 제품 특성 프로파일 제공
-- 안전성 관련 메타데이터 제공
+- 상품 원본 데이터 관리
+- 전성분 원문 관리
+- 상품 이미지/링크/카테고리/판매 상태 관리
+- 어드민을 통한 상품 데이터 검수 지원
 ---
 ### 3. Core Concepts
 #### 3.1 Product
@@ -23,19 +23,28 @@ Product 도메인은 제품 및 성분 정보를 관리하고,
 - 이름
 - 브랜드
 - 가격
+- 카테고리
+- 사용 단계
+- 이미지
+- 원본 상품 링크
 - 기타 메타 정보
 ---
-#### 3.2 IngredientGroup (ENUM)
-성분을 기능별로 분류한 그룹
+#### 3.2 ProductRawData
+추천 해석 이전의 상품 원본 데이터
 
-예:
-- 보습
-- 진정
-- 미백
-- 주름개선
+- 상품명/브랜드
+- 카테고리/사용 단계
+- 가격/이미지
+- 원본 링크
+- 전성분 원문
+- 상세페이지 claim
+- 기능성 표시
+- 어드민 검수 메모
 
 특징:
-- 도메인 전반에서 공통적으로 사용되는 기준 개념
+- Product 도메인은 원본 사실을 보존한다.
+- 원본 데이터를 추천 의미로 해석하지 않는다.
+- 추천을 위한 trait 추출은 Product Profiling 계층의 책임이다.
 ---
 #### 3.3 ProductProfile
 제품이 피부 상태에 어떤 방향으로 작용하는지 표현하는 프로파일
@@ -47,13 +56,15 @@ Product 도메인은 제품 및 성분 정보를 관리하고,
 
 특징:
 - 추천 도메인에서 상태 기반 비교에 사용하는 기준 데이터
-- 수치 스케일/계수/임계값은 Product가 아닌 Recommendation 정책에서 해석
+- Product Aggregate의 본질 속성이 아니라 Product Profiling / ACL의 산출물이다
+- 수치 스케일/계수/임계값은 Product가 아닌 Recommendation 정책에서 해석한다
+- 원본 상품 데이터가 바뀌거나 profiling rule이 바뀌면 재생성될 수 있다
 ---
 ### 4. Domain Flow
 
 ```text
 product-flow
-제품 수집 → 성분 추출 → 특성 매핑 → ProductProfile 저장/갱신
+어드민 상품 등록 → ProductRawData 저장 → Product Profiling → ProductProfile 저장/갱신
 ```
 ---
 ### 5. Boundary
@@ -61,6 +72,7 @@ product-flow
 - SkinAnalysis 도메인을 알지 않는다
 - Recommendation 도메인을 알지 않는다
 - 사용자 상태를 알지 않는다
+- ProductProfile의 추천 점수나 사용자별 적합도는 알지 않는다
 ---
 ### 6. Key Design Principle
 
@@ -72,3 +84,4 @@ product-flow
 
 - 제품 특성화 방식은 변경 가능하며, 도메인 외부 파이프라인에서 관리한다
 - Product 도메인은 추천 정책의 가중치/임계값에 의존하지 않는다
+- 초기 상품 입력은 올리브영 쇼핑큐레이터 등 외부 링크를 어드민이 입력하고, 이미지/전성분/claim을 검수하는 흐름을 우선한다

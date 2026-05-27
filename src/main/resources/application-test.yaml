@@ -17,6 +17,12 @@ auth:
     aad: TOSS
     mtls-cert-path:
     mtls-key-path:
+  google:
+    client-id: test-google-client-id
+    client-secret: test-google-client-secret
+    redirect-uri: http://localhost:5173/admin/oauth/google/callback
+    token-uri: https://oauth2.googleapis.com/token
+    user-info-uri: https://openidconnect.googleapis.com/v1/userinfo
   jwt:
     secret: test-jwt-secret-key-must-be-long-enough-123
     access-token-expiration-seconds: 3600

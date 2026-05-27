@@ -4,13 +4,17 @@ import com.pium.application.auth.dto.AuthTokenView;
 import com.pium.application.auth.dto.ExternalAuthenticatedUser;
 import com.pium.application.auth.dto.LoginCommand;
 import com.pium.application.auth.provider.Login;
+import com.pium.application.auth.required.ExchangeGoogleTokenPort;
 import com.pium.application.auth.required.ExchangeTossTokenPort;
 import com.pium.application.auth.required.IssueAccessTokenPort;
+import com.pium.application.auth.required.LoadGoogleUserPort;
 import com.pium.application.auth.required.LoadTossUserPort;
 import com.pium.application.auth.required.LoadUserOauthPort;
 import com.pium.application.auth.required.SaveUserOauthPort;
 import com.pium.application.auth.required.SaveUserPort;
 import com.pium.application.auth.required.SaveUserProfilePort;
+import com.pium.application.auth.required.dto.GoogleAccessToken;
+import com.pium.application.auth.required.dto.GoogleAuthenticatedUser;
 import com.pium.application.auth.required.dto.TossAccessToken;
 import com.pium.application.auth.required.dto.TossAuthenticatedUser;
 import com.pium.domain.user.enumtype.OauthProvider;
@@ -31,6 +35,8 @@ public class LoginService implements Login {
 
     private final ExchangeTossTokenPort exchangeTossTokenPort;
     private final LoadTossUserPort loadTossUserPort;
+    private final ExchangeGoogleTokenPort exchangeGoogleTokenPort;
+    private final LoadGoogleUserPort loadGoogleUserPort;
     private final LoadUserOauthPort loadUserOauthPort;
     private final SaveUserPort saveUserPort;
     private final SaveUserOauthPort saveUserOauthPort;
@@ -49,9 +55,21 @@ public class LoginService implements Login {
     private ExternalAuthenticatedUser authenticate(LoginCommand command) {
         return switch (command.provider()) {
             case TOSS -> authenticateWithToss(command);
-            case GOOGLE -> throw new UnsupportedOperationException("GOOGLE not implemented");
+            case GOOGLE -> authenticateWithGoogle(command);
             case KAKAO -> throw new UnsupportedOperationException("KAKAO not implemented");
         };
+    }
+
+    private ExternalAuthenticatedUser authenticateWithGoogle(LoginCommand command) {
+        GoogleAccessToken token = exchangeGoogleTokenPort.exchange(command.authorizationCode());
+
+        GoogleAuthenticatedUser googleUser = loadGoogleUserPort.load(token.accessToken());
+
+        return new ExternalAuthenticatedUser(
+                OauthProvider.GOOGLE,
+                ProviderUserId.of(googleUser.userKey()),
+                googleUser.name()
+        );
     }
 
     private ExternalAuthenticatedUser authenticateWithToss(LoginCommand command) {

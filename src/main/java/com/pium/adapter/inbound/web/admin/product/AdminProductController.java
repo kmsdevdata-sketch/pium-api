@@ -8,6 +8,8 @@ import com.pium.application.product.provided.GetProduct;
 import com.pium.application.product.provided.ListProducts;
 import com.pium.application.product.provided.RegisterProduct;
 import com.pium.application.product.provided.UpdateProduct;
+import com.pium.application.productprofile.dto.ProductProfileView;
+import com.pium.application.productprofile.provided.GenerateProductProfile;
 import com.pium.domain.product.enumtype.ProductCategory;
 import com.pium.domain.product.enumtype.ProductStatus;
 import com.pium.domain.product.vo.ProductId;
@@ -34,6 +36,7 @@ public class AdminProductController {
     private final UpdateProduct updateProduct;
     private final GetProduct getProduct;
     private final ListProducts listProducts;
+    private final GenerateProductProfile generateProductProfile;
 
     @PostMapping
     public ApiResponse<ProductResponse> register(
@@ -72,5 +75,13 @@ public class AdminProductController {
                 keyword
         ));
         return ApiResponse.ok(ProductListResponse.from(response));
+    }
+
+    @PostMapping("/{productId}/profile")
+    public ApiResponse<ProductProfileResponse> generateProfile(
+            @PathVariable String productId
+    ) {
+        ProductProfileView response = generateProductProfile.generate(ProductId.of(productId));
+        return ApiResponse.ok(ProductProfileResponse.from(response));
     }
 }

@@ -11,12 +11,14 @@ import java.util.Objects;
 /**
  * 상품이 가진 하나의 trait 신호를 표현
  *
- * @param trait
- * @param strength
- * @param confidence
- * @param evidenceRefs
- * @param <T>
+ * @param trait : 실제 trait enum 값 ex. BARRIER_SUPPORT, FRAGRANCE_OR_ALLERGEN_RISK
+ * @param strength : 해당 trait의 강도
+ * @param confidence : 해당 판단 신뢰도
+ * @param evidenceRefs : 해당 trait 판단을 뒷받침 하는 evidence id 목록
  */
+
+//ProductTraitSignal 은 추천,리스크 둘중하나를 표현해야되는데
+//실제 trait enum 값이 trait제외하곤 동일해서 <T extends Enum<T>> 로 Enum타입 강제
 public record ProductTraitSignal<T extends Enum<T>>(
         T trait,
         TraitStrength strength,

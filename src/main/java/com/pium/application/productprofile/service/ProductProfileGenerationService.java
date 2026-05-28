@@ -27,7 +27,7 @@ public class ProductProfileGenerationService implements GenerateProductProfile {
                 .orElseThrow(() -> new ProductException(ProductErrorCode.INVALID_PRODUCT_ID));
 
         ProductProfile productProfile = generateProductProfilePort.generate(product);
-        ProductProfile savedProfile = saveProductProfilePort.save(generateProductProfilePort);
+        ProductProfile savedProfile = saveProductProfilePort.save(productProfile);
 
         return ProductProfileView.from(savedProfile);
     }

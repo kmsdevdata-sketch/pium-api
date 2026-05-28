@@ -26,3 +26,9 @@ auth:
   jwt:
     secret: test-jwt-secret-key-must-be-long-enough-123
     access-token-expiration-seconds: 3600
+
+openai:
+  product-profile:
+    api-key: test-openai-api-key
+    responses-uri: https://api.openai.test/v1/responses
+    model: gpt-5.5

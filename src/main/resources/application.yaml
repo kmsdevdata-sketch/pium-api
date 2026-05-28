@@ -35,3 +35,9 @@ auth:
   jwt:
     secret: ${JWT_SECRET}
     access-token-expiration-seconds: ${JWT_ACCESS_TOKEN_EXPIRATION_SECONDS:3600}
+
+openai:
+  product-profile:
+    api-key: ${OPENAI_API_KEY:}
+    responses-uri: ${OPENAI_RESPONSES_URI:https://api.openai.com/v1/responses}
+    model: ${OPENAI_PRODUCT_PROFILE_MODEL:gpt-5.5}

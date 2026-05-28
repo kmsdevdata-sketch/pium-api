@@ -1,93 +1,150 @@
-# 스킨 추천 설계 개요 (MVP, 얇은 설계)
+# 스킨 추천 설계 개요 (MVP)
 
 ## 1. 목적
-추천 시스템을 복잡한 점수 최적화가 아니라 "상태 해석 + 안전한 추천 방향 제시" 중심으로 운영한다.
+
+피움 추천은 "피부 고민 HIGH에 대응하는 상품 추천"이 아니다.
+
+목표는 사용자의 전체 피부 상태와 개선 목표를 함께 해석해서,  
+현재 피부가 감당할 수 있는 상품 조건을 만들고 그 조건으로 상품을 필터링/정렬하는 것이다.
 
 ## 2. 설계 원칙
-- 추천 입력은 숫자 점수보다 상태 라벨을 우선 사용한다.
-- 단일 지표 최적화가 아니라 중첩 상태 조합을 기준으로 판단한다.
-- 안전성 신호(SENSITIVITY, BARRIER)는 효능 신호보다 우선한다.
-- GOAL은 보조 신호로만 반영하고 안전 규칙을 뒤집지 않는다.
-- 내부 점수는 7축 상태 그래프 시각화와 추천 연산에 사용한다.
 
-## 3. 최소 추천 흐름
+- 사용자를 단순 피부 타입으로 분류하지 않는다.
+- 7개 상태축의 LOW/MID/HIGH 조합을 해석한다.
+- HIGH뿐 아니라 MID도 추천 조건으로 사용한다.
+- GOAL은 방향키로 쓰되, 안전성 규칙을 뒤집지 않는다.
+- ProductProfile은 사용자 상태별 suitableFor가 아니라 상품의 benefit/risk/evidence 색인으로 유지한다.
+- 추천 결과에는 점수뿐 아니라 이유와 주의/완화 여부를 남긴다.
+
+## 3. 현재 추천 흐름
+
 ```text
 설문 응답
--> 상태축 점수 계산(내부)
--> 상태 라벨 변환(LOW/MID/HIGH)
--> 조합 해석
--> SkinNeedProfile 생성
--> ProductProfile 후보 비교
--> 안전 상한선/위험 감점/목표 보정
--> 추천 결과 생성
+-> SkinAnalysisResult
+   - 7개 SkinMetric score/level
+   - UserGoal, 최대 2개
+-> SkinInterpretation
+   - 상태 조합 해석
+   - goal 충돌 안내
+   - routineIntent 결정
+-> ProductSearchSpec
+   - required/preferred/blocked/caution trait
+   - goal boost
+   - fallback policy
+-> ProductProfile 후보 조회
+-> RecommendationPolicy
+   - hard gate
+   - benefit matching
+   - risk penalty
+   - diversity/fallback
+-> RecommendationResult
 ```
 
-## 4. 중간 해석 모델
+상세 흐름은 [Recommendation Flow](recommendation/RecommendationFlow.md)를 기준으로 한다.
 
-추천 엔진은 `DRYNESS HIGH -> 보습 추천` 같은 단일 축 매핑만 사용하지 않는다.
+## 4. SkinInterpretation
 
-`SkinAnalysisResult`를 바로 상품과 비교하지 않고,
-추천이 소비할 수 있는 중간 언어인 `SkinNeedProfile`로 변환한다.
+`SkinAnalysisResult`는 진단 결과의 사실 데이터다.  
+추천 엔진은 이를 바로 상품과 비교하지 않고 먼저 `SkinInterpretation`으로 해석한다.
 
-`SkinNeedProfile`은 다음 정보를 가진다.
+예:
 
-- 상태축별 필요 trait 가중치
-- 피해야 할 risk trait 가중치
-- 현재 피부의 risk tolerance
-- 주요 중첩 상태 패턴
-- GOAL이 반영될 수 있는 범위
-- 추천 설명에 사용할 care strategy
+```text
+DRYNESS MID
+BARRIER MID
+OILINESS MID
+SENSITIVITY LOW
+BLEMISH LOW
 
-상세 내용은 [SkinNeedProfile](recommendation/SkinNeedProfile.md)을 기준으로 한다.
+-> 강한 교정 루틴보다 가벼운 수분 보충, 장벽 유지, 무거운 유분감 회피가 적합한 상태
+```
 
-## 5. 안전 게이트와 안전 상한선
-다음 조건이면 안전 우선 모드를 적용한다.
+이 단계에서 생성하는 것:
 
-- SENSITIVITY = HIGH
-- 또는 BARRIER = HIGH
+- 현재 피부 상태 요약 타입
+- 주요/보조 니즈
+- 주의해야 할 risk
+- routineIntent
+- goal 반영 가능 범위
+- goal 충돌 안내
 
-단, 안전 우선 모드는 "장벽 제품만 추천한다"는 뜻이 아니다.
+상세 내용은 [Skin Interpretation](recommendation/SkinInterpretation.md)을 기준으로 한다.
 
-이 경우 추천은 다음 방식으로 제한한다.
+## 5. ProductSearchSpec
 
-- 명백히 위험한 후보는 제외한다.
-- 강한 액티브/각질/자극 리스크 상품은 최대 추천 점수를 제한한다.
-- 안전 기준을 통과한 상품 안에서는 다른 피부 고민과 GOAL도 반영한다.
-- 트러블, 색소, 탄력 고민은 무시하지 않고 현재 피부가 감당 가능한 강도로 다룬다.
+`ProductSearchSpec`은 SkinInterpretation을 상품 조회/필터/랭킹 가능한 조건으로 바꾼 것이다.
+
+예:
+
+```text
+preferredTraits:
+- HYDRATION_SUPPORT
+- BARRIER_SUPPORT
+
+cautionRiskTraits:
+- HEAVY_OCCLUSIVE_RISK
+- DRYING_OR_STRIPPING_RISK
+
+categoryHints:
+- TONER
+- ESSENCE_SERUM
+- LOTION_CREAM
+```
+
+즉 추천은 "전체 상품에 점수를 다 매긴 뒤 상위만 고르는 방식"이 아니라,  
+먼저 현재 피부상태에 맞는 검색 조건을 만든 뒤 후보를 좁히고 정렬한다.
+
+## 6. Goal 반영
+
+현재 GOAL은 설문상 최대 2개까지 선택된다.
+
+| Code | Goal |
+| --- | --- |
+| Q11_1 | 보습·수분감 |
+| Q11_2 | 트러블·여드름 |
+| Q11_3 | 피부 톤·미백 |
+| Q11_4 | 모공·피지 |
+| Q11_5 | 탄력·주름 |
+| Q11_6 | 민감한 피부 진정·장벽 강화 |
+
+원칙:
+
+- GOAL은 상태를 덮어쓰지 않는다.
+- GOAL은 안전 조건을 통과한 후보 안에서 우선순위를 조정한다.
+- GOAL과 현재 상태가 충돌하면 모드를 나누지 않고 안내한다.
+
+예:
+
+```text
+BARRIER HIGH + GOAL 트러블
+-> 트러블 케어 goal은 반영
+-> 강한 산/필링/고자극 액티브는 제한
+-> 장벽을 해치지 않는 트러블 케어 상품 우선
+```
+
+## 7. Safety 우선순위
+
+안전성은 단순 감점이 아니라 후보 가능성의 상한선이다.
+상세 matrix와 관측 가능한 proxy는 [Safety Policy](recommendation/SafetyPolicy.md)를 기준으로 한다.
+
+```text
+1. Hard Block
+2. Soft Penalty
+3. Caution
+```
 
 예:
 
 ```text
 BARRIER HIGH + BLEMISH HIGH
--> 트러블 케어 필요
--> 하지만 강한 BHA/필링/고자극 액티브는 지연
--> 진정 + 장벽 + 약한 트러블 케어 상품을 우선
+-> BARRIER/SOOTHING 우선
+-> BLEMISH_CARE는 mild하게 반영
+-> STRONG_EXFOLIATION/HIGH_IRRITATION 후보는 제외 또는 강한 감점
 ```
 
-## 6. GOAL 반영 원칙
-- GOAL은 상태를 덮어쓰지 않는다.
-- GOAL은 동일 안전 조건 내에서만 추천 순서를 약하게 조정한다.
-- 예: AGING 목표가 있어도 SAFE_ONLY 또는 CAUTION이면 공격적 기능성 추천을 지연한다.
+이 방식은 "장벽 문제가 있는데 강한 트러블 제품이 상위 추천되는 문제"를 줄이기 위한 핵심 장치다.
 
-## 7. 사용자 노출 원칙
-추천 응답은 아래 항목만 우선 제공한다.
-
-- 현재 상태 요약 1문장
-- 축별 상태 라벨(LOW/MID/HIGH)
-- 근거 문장(왜 이렇게 해석했는지)
-- 추천 모드(SAFE_ONLY, CAUTION, BALANCED)
-- 7축 상태 그래프(레이더/폴리곤) 시각화
-
-숫자 점수는 노출하지 않는다.
-
-## 8. 상품 추천 매핑 원칙
-- 기존의 단순 필요 성분군 1:1 매핑에서 벗어나, 복합 상태 조합을 기준으로 추천한다.
-- 추천 계산은 `상태 라벨 + 내부 점수 분포 + SkinNeedProfile + ProductProfile + 안전 상한선 + GOAL`을 함께 사용한다.
-- 추천 결과마다 근거를 남긴다.
-  - 어떤 상태 신호 조합이 작동했는지
-  - 어떤 안전 규칙이 적용되었는지
-  - 어떤 이유로 특정 상품군이 제외/지연되었는지
-- 추천 설명은 "효능 주장"보다 "현재 상태에 맞는 루틴 방향" 중심으로 작성한다.
+## 8. ProductProfile 원칙
 
 상품 원본 데이터는 추천 엔진이 직접 소비하지 않는다.
 
@@ -95,12 +152,57 @@ BARRIER HIGH + BLEMISH HIGH
 ProductRawData
 -> ProductProfiling / ACL
 -> ProductProfile
--> RecommendationPolicy
 ```
 
-상세 내용은 [Product Profiling](recommendation/ProductProfiling.md)과
-[Recommendation Flow](recommendation/RecommendationFlow.md)를 기준으로 한다.
+ProductProfile은 다음을 가진다.
 
-## 9. 결론
-MVP 추천 시스템은 "정밀 점수 엔진"이 아니라 "중첩 상태 해석 기반의 안전한 상품 후보 정렬 시스템"이다.
-초기에는 규칙을 얇게 유지하고, 사용자 피드백과 운영 데이터로 점진 개선한다.
+- benefitTraits
+- riskTraits
+- safetyTraits
+- traitStrength
+- confidence
+- evidenceSource
+- evidenceChain
+
+저장하지 않는 것:
+
+```text
+suitableFor.DRYNESS_MID
+suitableFor.BARRIER_HIGH
+```
+
+이런 필드는 사용자 상태 의존적이므로 ProductProfile에 두지 않는다.  
+사용자 상태에 따른 적합성 판단은 ProductSearchSpec과 RecommendationPolicy가 런타임에 수행한다.
+
+## 9. Fallback
+
+추천 후보가 부족해도 결과를 완전히 비우지 않는다.
+
+```text
+Hard Block은 유지
+requiredTraits를 preferred로 완화
+categoryHints를 완화
+저위험 기본 관리 상품을 대안 추천으로 노출
+```
+
+사용자에게는 다음처럼 안내한다.
+
+```text
+현재 등록된 상품 중 조건을 정확히 만족하는 후보가 부족해요.
+그래서 자극 가능성이 낮고 기본 관리에 가까운 대안 상품을 함께 보여드려요.
+```
+
+## 10. 결론
+
+MVP 추천 시스템은 정밀 처방 엔진이 아니라,  
+중첩 피부상태 해석 기반의 안전한 상품 후보 정렬 시스템이다.
+
+핵심은 다음 순서다.
+
+```text
+피부상태 해석
+-> 상품 검색 조건 생성
+-> ProductProfile 후보 필터
+-> 안전 규칙 적용
+-> 랭킹과 설명 생성
+```

@@ -7,7 +7,8 @@
 ```text
 사용자 입력(설문)
 -> 피부 상태 벡터 생성
--> 추천용 중간 해석(SkinNeedProfile)
+-> 피부 상태 해석(SkinInterpretation)
+-> 상품 검색 조건(ProductSearchSpec)
 -> 상품 원본 데이터 프로파일링(ProductProfile)
 -> 안전성 게이팅/상한선
 -> 추천 결과 생성
@@ -45,11 +46,13 @@
 ---
 #### 3.2 [Recommendation](./RecommendationDomain.md)
 **역할**
-사용자의 중첩 상태 해석과 제품 특성 프로파일을 비교해 안전한 추천 결과를 생성한다.
+사용자의 중첩 피부상태와 goal을 해석해 상품 검색 조건을 만들고, 제품 특성 프로파일과 비교해 안전한 추천 결과를 생성한다.
 
 **책임**
 - 추천 요청 처리 (RecommendationRequest)
-- SkinNeedProfile과 ProductProfile 적합도 계산
+- SkinInterpretation 생성
+- ProductSearchSpec 생성
+- ProductSearchSpec과 ProductProfile 적합도 계산
 - 위험도 기반 게이팅/상한선/패널티 적용
 - 제품별 점수 계산 및 정렬 (ProductScore)
 ---

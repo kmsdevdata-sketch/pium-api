@@ -108,8 +108,30 @@ public class OpenAiProductProfileGeneratorAdapter implements GenerateProductProf
                 Use only the provided product input fields. Do not browse the internet or infer external product facts.
                 Brand and product names are weak context only; do not create strong benefit claims from names alone.
                 Do not infer concentration, pH, high-dose, low-pH, or clinical efficacy unless explicitly present in labels, ingredients, or claims.
+                ProductProfile is a product index, not a user-specific recommendation or user-facing explanation.
+                Prefer conservative strength and confidence when a signal is based only on ingredient presence.
                 If evidence is weak, use LOW confidence or add a warning.
+
+                Functional label rules:
+                - Treat functionalLabels value NONE as no regulatory label.
+                - Do not create REGULATORY_LABEL evidence for NONE.
+                - Do not reference NONE as evidence for benefitTraits or riskTraits.
+                - Only explicit functional labels such as BRIGHTENING, WRINKLE_IMPROVEMENT, UV_PROTECTION, ACNE_PRONE_SKIN_RELIEF, or BARRIER_FUNCTION_RECOVERY can support REGULATORY_LABEL evidence.
+
+                Claim rules:
+                - Empty, placeholder, test, or generic claims are not grounded benefit evidence.
+                - Do not create MARKETING_CLAIM evidence from claims like "test", "테스트", "테스트 상품입니다", or other non-efficacy text.
+                - If claims are missing or unusable, mention that limitation in warnings only when useful.
+
+                Category and usage step rules:
+                - CATEGORY and USAGE_STEP are weak context for product use, not strong efficacy evidence.
+                - Do not use CATEGORY or USAGE_STEP as the sole evidenceRef for a benefitTrait.
+                - CATEGORY or USAGE_STEP alone cannot make a STRONG benefit.
+
+                Evidence reference rules:
                 Every benefitTraits and riskTraits item must reference existing evidenceSignals ids.
+                Each referenced evidenceSignal must positively support the trait it is attached to.
+                Do not attach absence-of-evidence signals, placeholder claims, or NONE labels as evidenceRefs.
                 Use empty arrays when there is no grounded signal.
                 Return Korean evidence messages and warnings.
                 """.trim();

@@ -1,7 +1,7 @@
 package com.pium.application.productprofile.service;
 
 import com.pium.application.product.required.LoadProductPort;
-import com.pium.application.productprofile.dto.ProductProfileView;
+import com.pium.application.productprofile.dto.ProductProfileGenerationView;
 import com.pium.application.productprofile.provided.GenerateProductProfile;
 import com.pium.application.productprofile.required.GenerateProductProfilePort;
 import com.pium.application.productprofile.required.SaveProductProfilePort;
@@ -22,13 +22,13 @@ public class ProductProfileGenerationService implements GenerateProductProfile {
     private final SaveProductProfilePort saveProductProfilePort;
 
     @Override
-    public ProductProfileView generate(ProductId productId) {
+    public ProductProfileGenerationView generate(ProductId productId) {
         Product product = loadProductPort.findById(productId)
                 .orElseThrow(() -> new ProductException(ProductErrorCode.INVALID_PRODUCT_ID));
 
         ProductProfile productProfile = generateProductProfilePort.generate(product);
         ProductProfile savedProfile = saveProductProfilePort.save(productProfile);
 
-        return ProductProfileView.from(savedProfile);
+        return ProductProfileGenerationView.from(savedProfile);
     }
 }

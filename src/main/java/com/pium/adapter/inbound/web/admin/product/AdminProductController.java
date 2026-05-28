@@ -8,8 +8,10 @@ import com.pium.application.product.provided.GetProduct;
 import com.pium.application.product.provided.ListProducts;
 import com.pium.application.product.provided.RegisterProduct;
 import com.pium.application.product.provided.UpdateProduct;
+import com.pium.application.productprofile.dto.ProductProfileGenerationView;
 import com.pium.application.productprofile.dto.ProductProfileView;
 import com.pium.application.productprofile.provided.GenerateProductProfile;
+import com.pium.application.productprofile.provided.GetProductProfile;
 import com.pium.domain.product.enumtype.ProductCategory;
 import com.pium.domain.product.enumtype.ProductStatus;
 import com.pium.domain.product.vo.ProductId;
@@ -37,6 +39,7 @@ public class AdminProductController {
     private final GetProduct getProduct;
     private final ListProducts listProducts;
     private final GenerateProductProfile generateProductProfile;
+    private final GetProductProfile getProductProfile;
 
     @PostMapping
     public ApiResponse<ProductResponse> register(
@@ -78,10 +81,18 @@ public class AdminProductController {
     }
 
     @PostMapping("/{productId}/profile")
-    public ApiResponse<ProductProfileResponse> generateProfile(
+    public ApiResponse<ProductProfileGenerationResponse> generateProfile(
             @PathVariable String productId
     ) {
-        ProductProfileView response = generateProductProfile.generate(ProductId.of(productId));
+        ProductProfileGenerationView response = generateProductProfile.generate(ProductId.of(productId));
+        return ApiResponse.ok(ProductProfileGenerationResponse.from(response));
+    }
+
+    @GetMapping("/{productId}/profile")
+    public ApiResponse<ProductProfileResponse> getProfile(
+            @PathVariable String productId
+    ) {
+        ProductProfileView response = getProductProfile.get(ProductId.of(productId));
         return ApiResponse.ok(ProductProfileResponse.from(response));
     }
 }

@@ -1,6 +1,6 @@
 package com.pium.application.productprofile.provided;
 
-import com.pium.application.productprofile.dto.ProductProfileView;
+import com.pium.application.productprofile.dto.ProductProfileGenerationView;
 import com.pium.domain.product.vo.ProductId;
 
 /**
@@ -8,5 +8,5 @@ import com.pium.domain.product.vo.ProductId;
  */
 public interface GenerateProductProfile {
 
-    ProductProfileView generate(ProductId productId);
+    ProductProfileGenerationView generate(ProductId productId);
 }

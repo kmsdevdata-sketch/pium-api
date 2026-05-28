@@ -41,8 +41,7 @@ class ProductProfileGenerationServiceTest {
         var result = service.generate(product.getId());
 
         assertThat(result.productId()).isEqualTo(product.getId().value());
-        assertThat(result.benefitTraits()).hasSize(1);
-        assertThat(result.riskTraits()).hasSize(1);
+        assertThat(result.generated()).isTrue();
         verify(loadProductPort).findById(product.getId());
         verify(generateProductProfilePort).generate(product);
         verify(saveProductProfilePort).save(productProfile);

@@ -9,8 +9,10 @@ import com.pium.application.product.provided.GetProduct;
 import com.pium.application.product.provided.ListProducts;
 import com.pium.application.product.provided.RegisterProduct;
 import com.pium.application.product.provided.UpdateProduct;
+import com.pium.application.productprofile.dto.ProductProfileGenerationView;
 import com.pium.application.productprofile.dto.ProductProfileView;
 import com.pium.application.productprofile.provided.GenerateProductProfile;
+import com.pium.application.productprofile.provided.GetProductProfile;
 import com.pium.domain.product.enumtype.FunctionalLabel;
 import com.pium.domain.product.enumtype.ProductCategory;
 import com.pium.domain.product.enumtype.ProductStatus;
@@ -69,6 +71,9 @@ class AdminProductControllerTest {
 
     @MockitoBean
     private GenerateProductProfile generateProductProfile;
+
+    @MockitoBean
+    private GetProductProfile getProductProfile;
 
     @MockitoBean
     private JwtProperties jwtProperties;
@@ -182,11 +187,25 @@ class AdminProductControllerTest {
     @Test
     void generateProfile_상품프로파일을_생성한다() throws Exception {
         given(generateProductProfile.generate(ProductId.of("product-001")))
-                .willReturn(productProfileView("product-001"));
+                .willReturn(new ProductProfileGenerationView("product-001", true));
 
         mockMvc.perform(post("/api/v1/admin/products/product-001/profile")
                         .with(user(AuthFixture.createAdminAuthenticatedUser(UserId.of("admin-user"))))
                         .with(csrf())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.productId").value("product-001"))
+                .andExpect(jsonPath("$.data.generated").value(true));
+    }
+
+    @Test
+    void getProfile_상품프로파일을_조회한다() throws Exception {
+        given(getProductProfile.get(ProductId.of("product-001")))
+                .willReturn(productProfileView("product-001"));
+
+        mockMvc.perform(get("/api/v1/admin/products/product-001/profile")
+                        .with(user(AuthFixture.createAdminAuthenticatedUser(UserId.of("admin-user"))))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))

@@ -9,6 +9,7 @@ import com.pium.domain.user.model.User;
 import com.pium.domain.user.model.UserProfile;
 import com.pium.domain.user.vo.UserId;
 import org.junit.jupiter.api.Test;
+import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Optional;
 
@@ -39,6 +40,10 @@ class LoadAuthenticatedUserPersistenceAdapterTest {
         assertThat(result).isPresent();
         assertThat(result.get().userId()).isEqualTo(user.getId().value());
         assertThat(result.get().nickname()).isEqualTo("피움닉네임");
+        assertThat(result.get().role()).isEqualTo(user.getRole());
+        assertThat(result.get().getAuthorities())
+                .extracting(GrantedAuthority::getAuthority)
+                .containsExactly("ROLE_USER");
         verify(userProfileJpaRepository).findByUserId(user.getId().value());
     }
 

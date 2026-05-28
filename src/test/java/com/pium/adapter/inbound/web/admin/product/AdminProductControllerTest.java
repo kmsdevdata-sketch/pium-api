@@ -1,6 +1,8 @@
 package com.pium.adapter.inbound.web.admin.product;
 
+import com.pium.adapter.outbound.auth.jwt.JwtProperties;
 import com.pium.application.auth.fixture.AuthFixture;
+import com.pium.application.auth.required.LoadAuthenticatedUserPort;
 import com.pium.application.product.dto.ProductListView;
 import com.pium.application.product.dto.ProductView;
 import com.pium.application.product.provided.GetProduct;
@@ -13,10 +15,12 @@ import com.pium.domain.product.enumtype.ProductStatus;
 import com.pium.domain.product.enumtype.UsageStep;
 import com.pium.domain.product.vo.ProductId;
 import com.pium.domain.user.vo.UserId;
+import com.pium.config.security.SecurityConfig;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -35,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(AdminProductController.class)
+@Import(SecurityConfig.class)
 class AdminProductControllerTest {
 
     @Autowired
@@ -52,13 +57,19 @@ class AdminProductControllerTest {
     @MockitoBean
     private ListProducts listProducts;
 
+    @MockitoBean
+    private JwtProperties jwtProperties;
+
+    @MockitoBean
+    private LoadAuthenticatedUserPort loadAuthenticatedUserPort;
+
     @Test
     void register_상품을_등록한다() throws Exception {
         given(registerProduct.register(any()))
                 .willReturn(productView("product-001", ProductStatus.ACTIVE));
 
         mockMvc.perform(post("/api/v1/admin/products")
-                        .with(user(AuthFixture.createAuthenticatedUser(UserId.of("admin-user"))))
+                        .with(user(AuthFixture.createAdminAuthenticatedUser(UserId.of("admin-user"))))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -92,7 +103,7 @@ class AdminProductControllerTest {
                 .willReturn(productView("product-001", ProductStatus.INACTIVE));
 
         mockMvc.perform(put("/api/v1/admin/products/product-001")
-                        .with(user(AuthFixture.createAuthenticatedUser(UserId.of("admin-user"))))
+                        .with(user(AuthFixture.createAdminAuthenticatedUser(UserId.of("admin-user"))))
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -123,7 +134,7 @@ class AdminProductControllerTest {
                 .willReturn(productView("product-001", ProductStatus.ACTIVE));
 
         mockMvc.perform(get("/api/v1/admin/products/product-001")
-                        .with(user(AuthFixture.createAuthenticatedUser(UserId.of("admin-user"))))
+                        .with(user(AuthFixture.createAdminAuthenticatedUser(UserId.of("admin-user"))))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
@@ -139,12 +150,20 @@ class AdminProductControllerTest {
                         .param("status", "ACTIVE")
                         .param("category", "LOTION_CREAM")
                         .param("keyword", "장벽")
-                        .with(user(AuthFixture.createAuthenticatedUser(UserId.of("admin-user"))))
+                        .with(user(AuthFixture.createAdminAuthenticatedUser(UserId.of("admin-user"))))
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.totalCount").value(1))
                 .andExpect(jsonPath("$.data.products[0].productId").value("product-001"));
+    }
+
+    @Test
+    void list_일반사용자는_어드민_상품목록을_조회할수없다() throws Exception {
+        mockMvc.perform(get("/api/v1/admin/products")
+                        .with(user(AuthFixture.createAuthenticatedUser(UserId.of("user-001"))))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     private ProductView productView(String productId, ProductStatus status) {

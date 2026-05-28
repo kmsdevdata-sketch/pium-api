@@ -37,7 +37,8 @@ public class LoadAuthenticatedUserPersistenceAdapter implements LoadAuthenticate
         return userProfileJpaRepository.findByUserId(userEntity.getUserId())
                 .map(userProfileEntity -> new AuthenticatedUser(
                         userEntity.getUserId(),
-                        userProfileEntity.getNickname()
+                        userProfileEntity.getNickname(),
+                        userEntity.getRole()
                 ));
     }
 

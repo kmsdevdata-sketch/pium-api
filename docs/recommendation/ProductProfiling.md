@@ -4,8 +4,11 @@
 
 `ProductProfile`은 상품 원본 데이터를 추천 엔진이 이해할 수 있는 의미 모델로 번역한 결과다.
 
-상품 원본에는 이름, 브랜드, 카테고리, 전성분, 상세페이지 문구, 기능성 표시, 이미지 등이 포함된다.  
+상품 원본에는 이름, 브랜드, 카테고리, 전성분, 상세페이지 문구, 기능성 표시, 이미지 등이 포함된다.
 추천 엔진은 이 원본 데이터를 직접 소비하지 않고, Product Profiling 계층이 생성한 trait/strength/evidence/confidence를 소비한다.
+
+MVP의 ProductProfile 생성은 룰 기반 성분 사전을 완성하는 방식보다
+AI-assisted profiler를 우선한다. 단, AI는 추천을 수행하지 않고 상품 원본을 구조화된 색인으로 번역하는 역할만 맡는다.
 
 ProductProfile은 사용자 피부 상태별 적합성 표가 아니다.
 
@@ -34,14 +37,14 @@ Product Domain
 -> Recommendation Domain
 ```
 
-`ProductProfile`은 Product Aggregate의 본질 속성이 아니다.  
+`ProductProfile`은 Product Aggregate의 본질 속성이 아니다.
 추천을 위한 해석 산출물이므로 별도 테이블 또는 read model로 저장하는 방향을 우선한다.
 
 ## 3. ProductRawData
 
 초기 상품 입력은 어드민 기반으로 운영한다.
 
-관리자는 올리브영 쇼핑큐레이터 또는 외부 상품 링크를 입력하고,  
+관리자는 올리브영 쇼핑큐레이터 또는 외부 상품 링크를 입력하고,
 상품 이미지와 원본 데이터를 검수/보정한다.
 
 ProductRawData 후보 필드:
@@ -63,6 +66,21 @@ ProductRawData 후보 필드:
 
 이미지는 사용자 노출을 위한 데이터이며, 초기 추천 판단의 근거로 사용하지 않는다.
 
+AI profiler 입력은 운영자가 저장한 원본 데이터로 제한한다.
+
+```text
+brandName
+productName
+category
+usageStep
+functionalLabels
+ingredientText
+claims
+```
+
+브랜드명과 상품명은 식별과 문맥 보조로만 사용한다.
+인터넷 검색으로 외부 상품 정보를 임의 수집하지 않고, 필요한 상품 설명은 어드민이 `claims`에 입력하거나 보정한다.
+
 ## 4. What We Can Know
 
 | 소스 | 알 수 있는 것 | 한계 | 근거 수준 |
@@ -71,7 +89,7 @@ ProductRawData 후보 필드:
 | 성분 순서 | 상위 성분의 상대적 비중 힌트 | 일정 함량 이하 성분 순서는 약한 추론 | 중하 |
 | 기능성 표시 | 미백/주름/자외선 등 규제상 효능 축 | 치료 또는 개인 효과 보장 아님 | 높음 |
 | 상세페이지 claim | 브랜드가 의도한 포지셔닝 | 마케팅 주장일 수 있음 | 낮음~중간 |
-| 카테고리 | 사용 맥락, 잔류/세정 여부 | benefit을 단정할 수 없음 | 낮음 |
+| 카테고리 | 사용 맥락, 후보 필터 힌트 | benefit을 단정할 수 없음 | 낮음 |
 | 피부타입 표기 | 브랜드의 타깃 사용자 | 객관 검증이 약할 수 있음 | 낮음 |
 
 ProductProfile은 확실한 사실과 추론을 분리해 저장해야 한다.
@@ -81,23 +99,20 @@ ProductProfile은 확실한 사실과 추론을 분리해 저장해야 한다.
 ```json
 {
   "productId": "prod_123",
-  "profileVersion": "product-profiler-v1",
   "category": "LOTION_CREAM",
   "usageStep": "MOISTURIZE",
-  "leaveOn": true,
   "benefitTraits": [
     {
       "trait": "BARRIER_SUPPORT",
       "strength": "MODERATE",
       "confidence": "MEDIUM",
-      "targetsSkinMetrics": ["BARRIER", "DRYNESS"],
       "evidenceRefs": ["ev_1", "ev_2"]
     }
   ],
   "riskTraits": [
     {
       "trait": "FRAGRANCE_OR_ALLERGEN_RISK",
-      "strength": "LOW",
+      "strength": "WEAK",
       "confidence": "MEDIUM",
       "evidenceRefs": ["ev_3"]
     }
@@ -106,6 +121,10 @@ ProductProfile은 확실한 사실과 추론을 분리해 저장해야 한다.
     "HUMECTANT",
     "BARRIER_LIPID",
     "SOOTHING"
+  ],
+  "activeFamilies": [
+    "CERAMIDE",
+    "PANTHENOL"
   ],
   "evidenceSignals": [
     {
@@ -130,6 +149,31 @@ ProductProfile은 확실한 사실과 추론을 분리해 저장해야 한다.
 }
 ```
 
+필드 의미:
+
+| 필드 | 의미 | 생성 주체 |
+| --- | --- | --- |
+| productId | 어떤 상품의 프로파일인지 식별하는 ID | 서버 |
+| category | 상품 카테고리 | 서버 |
+| usageStep | 루틴에서 사용하는 단계 | 서버 |
+| benefitTraits | 상품이 줄 수 있는 긍정적 기능/효과 trait 목록 | AI profiler + validator |
+| riskTraits | 특정 피부 상태에서 부담이 될 수 있는 risk trait 목록 | AI profiler + validator |
+| ingredientGroups | 전성분에서 추출한 성분군 목록 | AI profiler + validator |
+| activeFamilies | 상품에 포함된 주요 기능성/활성 성분 계열 | AI profiler + validator |
+| evidenceSignals | benefit/risk/성분군 판단에 사용된 근거 목록 | AI profiler + validator |
+| warnings | 함량, pH, 실제 사용감 등 알 수 없는 부분에 대한 주의 메시지 | AI profiler + validator |
+
+MVP에서 제외하는 필드:
+
+| 필드 | 제외 이유 |
+| --- | --- |
+| profileVersion | 현재 단계에서 버전별 추적/교체를 운영하지 않는다 |
+| leaveOn | boolean으로 단정하기 어렵고 현재 추천 로직에 필수적이지 않다 |
+| textureEstimate | 실제 사용감은 원본 텍스트만으로 안정적으로 알기 어렵다 |
+| residueType | 일부 추론 가능하지만 현재 추천 판단에 필수적이지 않다 |
+| activeIntensity | 함량/pH/농도를 모르면 강도 단정 위험이 있다 |
+| suitableFor.* | 사용자 상태 의존 필드이므로 ProductProfile에 저장하지 않는다 |
+
 `strength`는 상품 trait의 강도를 뜻하고, 사용자 적합도를 뜻하지 않는다.
 
 | Strength | 의미 |
@@ -139,6 +183,9 @@ ProductProfile은 확실한 사실과 추론을 분리해 저장해야 한다.
 | WEAK | 성분 존재 또는 claim 등 단일 약한 근거 |
 
 정확한 함량, pH, 실제 사용감은 알 수 없으므로 strength는 효능 보장이 아니라 추천용 추론 강도다.
+
+`STRONG_ACTIVE_RISK`, `STRONG_EXFOLIATION_EFFECT`처럼 안전성에 영향을 주는 강한 신호는
+별도 `activeIntensity` 값으로 추상화하지 않고 risk trait와 evidence로 표현한다.
 
 ## 6. Benefit Traits
 
@@ -166,10 +213,10 @@ ProductProfile은 확실한 사실과 추론을 분리해 저장해야 한다.
 | COMEDOGENIC_RISK | 모공 막힘 가능성 힌트 |
 | DRYING_OR_STRIPPING_RISK | 건조/탈지 가능성 |
 | STRONG_EXFOLIATION_EFFECT | 강한 각질/산 케어 가능성 |
-| STRONG_ACTIVE_RISK | 강한 기능성 성분 강도 |
+| STRONG_ACTIVE_RISK | 강한 기능성 성분 부담 가능성 |
 | HEAVY_OCCLUSIVE_RISK | 무겁거나 답답할 수 있는 밀폐감 |
 
-Risk trait는 "나쁜 상품"이라는 뜻이 아니다.  
+Risk trait는 "나쁜 상품"이라는 뜻이 아니다.
 특정 피부 상태에서 추천 강도를 낮추거나 지연해야 하는 신호다.
 
 ## 8. Evidence Model
@@ -184,10 +231,40 @@ Risk trait는 "나쁜 상품"이라는 뜻이 아니다.
 | MARKETING_CLAIM | 낮음~중간 | 상세페이지 문구 |
 | ADMIN_REVIEW | 중간 | 운영자가 검수한 보정 정보 |
 
-추천 점수는 evidence confidence를 참고할 수 있지만,  
+추천 점수는 evidence confidence를 참고할 수 있지만,
 마케팅 claim만으로 강한 benefit을 만들지 않는다.
 
-## 9. MVP Ingredient Groups
+## 9. Active Families
+
+`activeFamilies`는 추천 점수의 직접 입력이라기보다, risk/benefit 설명과 향후 정책 확장에 쓰는 상품 자체 속성이다.
+사용자 상태별 적합성은 여기서 판단하지 않는다.
+
+초기 후보:
+
+| Family | 의미 |
+| --- | --- |
+| CERAMIDE | 세라마이드 계열 |
+| PANTHENOL | 판테놀 계열 |
+| NIACINAMIDE | 나이아신아마이드 |
+| RETINOID_LIKE | 레티놀/레티날 등 레티노이드 유사 계열 |
+| AHA | AHA 산 성분 계열 |
+| BHA | BHA 산 성분 계열 |
+| PHA | PHA 산 성분 계열 |
+| LHA | LHA 산 성분 계열 |
+| VITAMIN_C | 비타민 C 또는 유도체 계열 |
+| PEPTIDE | 펩타이드 계열 |
+| ADENOSINE | 아데노신 |
+| UV_FILTER | 자외선 차단 필터 |
+| FRAGRANCE | 향료/향 알레르겐 계열 |
+| HEAVY_OIL_WAX | 무거운 오일/왁스/밤 계열 |
+
+주의:
+
+- active family 존재는 성분 존재 또는 claim에 근거한 색인이다.
+- 함량, pH, 실제 자극 강도를 확정하지 않는다.
+- 강한 활성 신호가 필요하면 risk trait로 별도 표현한다.
+
+## 10. MVP Ingredient Groups
 
 초기 성분군은 넓게 잡고, 실제 운영 데이터로 세분화한다.
 
@@ -203,6 +280,7 @@ Risk trait는 "나쁜 상품"이라는 뜻이 아니다.
 | UV_FILTER | UV_PROTECTION | zinc oxide, titanium dioxide, organic UV filters |
 | FRAGRANCE_ALLERGEN | FRAGRANCE_OR_ALLERGEN_RISK | fragrance, parfum, limonene, linalool, citral |
 | EXFOLIATING_ACID | EXFOLIATION_EFFECT / STRONG_EXFOLIATION_EFFECT | AHA, BHA, PHA, LHA |
+| HEAVY_OCCLUSIVE | HEAVY_OCCLUSIVE_RISK | heavy oil, wax, balm-like occlusive groups |
 
 주의:
 
@@ -210,7 +288,40 @@ Risk trait는 "나쁜 상품"이라는 뜻이 아니다.
 - 성분 순서는 strength 추론에만 사용한다.
 - 기능성 라벨은 해당 효능축의 강한 evidence지만 치료 효과 보장은 아니다.
 
-## 10. Admin Requirements
+## 11. AI-assisted Profiler Policy
+
+ProductProfile 생성은 다음 구조를 따른다.
+
+```text
+ProductRawData
+-> AI ProductProfiler
+-> Structured JSON ProductProfile draft
+-> Server Validator
+-> ProductProfile 저장
+```
+
+원칙:
+
+- AI는 ProductProfile 초안을 생성한다.
+- 추천 런타임은 AI에 의존하지 않고 룰 기반으로 동작한다.
+- AI 출력은 JSON schema와 enum으로 제한한다.
+- 서버 validator가 enum, evidenceRefs, confidence, safety proxy를 검증한다.
+- 함량, pH, 고농도/저농도는 원문 또는 claim이 없으면 확정하지 않는다.
+- AI가 인터넷 검색으로 외부 정보를 임의 보강하지 않는다.
+- 모델 출력에 근거가 없는 trait는 저장하지 않는다.
+
+서버 validator가 보정해야 하는 대표 케이스:
+
+| 케이스 | 처리 |
+| --- | --- |
+| 허용 enum 외 값 생성 | 거부 또는 제거 |
+| evidenceRefs 없는 trait | 거부 또는 confidence 낮춤 |
+| 함량 claim 없는 고농도 단정 | 제거 |
+| pH 정보 없는 산성/저pH 단정 | 제거 |
+| 상품명만 근거로 강한 효능 단정 | 제거 또는 낮은 confidence 처리 |
+| STRONG_ACTIVE_RISK/STRONG_EXFOLIATION_EFFECT 누락 가능성 | safety proxy로 보정 |
+
+## 12. Admin Requirements
 
 어드민은 초기 상품 품질을 좌우하는 핵심 도구다.
 
@@ -227,8 +338,11 @@ Risk trait는 "나쁜 상품"이라는 뜻이 아니다.
 - ProductProfile 결과 검수
 - 추천 노출 제외 플래그
 
-어드민에서 ProductProfile을 직접 수동 작성하기보다,  
+어드민에서 ProductProfile을 직접 수동 작성하기보다,
 Profiler 결과를 확인하고 필요한 원본 데이터 또는 운영 메모를 보정하는 흐름을 우선한다.
+
+MVP에서는 ProductProfile 품질을 위해 별도 수동 입력 필드를 즉시 추가하지 않는다.
+현재 입력하는 브랜드명, 상품명, 카테고리, 사용 단계, 기능성 라벨, 전성분 원문, 상세페이지 claim을 우선 활용한다.
 
 향후 품질이 부족하면 다음 보조 태그만 추가 검토한다.
 

@@ -4,7 +4,7 @@
 
 이 문서는 피움의 상품 추천 흐름을 정의한다.
 
-피움 추천의 목표는 사용자를 단순 피부 타입으로 분류하거나  
+피움 추천의 목표는 사용자를 단순 피부 타입으로 분류하거나
 특정 HIGH 고민에 대응하는 상품을 바로 추천하는 것이 아니다.
 
 추천은 다음 질문에 답해야 한다.
@@ -42,7 +42,7 @@
 
 상품 데이터는 초기에 자동 크롤링을 전제로 하지 않는다.
 
-운영자가 어드민 페이지에서 올리브영 쇼핑큐레이터 또는 외부 상품 링크를 입력하고,  
+운영자가 어드민 페이지에서 올리브영 쇼핑큐레이터 또는 외부 상품 링크를 입력하고,
 상품 이미지와 필요한 원본 정보를 함께 등록한다.
 
 ```text
@@ -51,7 +51,8 @@ Admin
 -> 상품명, 브랜드, 카테고리, 가격, 이미지 확인
 -> 전성분/상세 설명/기능성 표시 입력 또는 보정
 -> ProductRawData 저장
--> ProductProfiler 실행
+-> AI-assisted ProductProfiler 실행
+-> 서버 validator 검증
 -> ProductProfile 저장 또는 재생성
 ```
 
@@ -62,10 +63,22 @@ Admin
 | 상품 링크 | 원본 추적, 운영 검수 | 추천 엔진은 링크 자체를 해석하지 않음 |
 | 상품 이미지 | 사용자 노출 | 추천 판단 근거로 사용하지 않음 |
 | 상품명/브랜드 | 사용자 노출, 식별 | 효능 근거로 직접 사용하지 않음 |
-| 카테고리 | 사용 단계/제형 추론 | 단독 benefit 근거로 과신하지 않음 |
+| 카테고리 | 사용 맥락, 후보 필터 힌트 | 단독 benefit 근거로 과신하지 않음 |
+| 사용 단계 | 루틴 단계, 후보 필터 힌트 | 씻어내는지 여부를 무리하게 단정하지 않음 |
 | 전성분 | 성분군/리스크/benefit 추론 | 정확한 함량은 알 수 없음 |
 | 상세페이지 문구 | 상품 포지셔닝 보조 | 마케팅 claim으로 낮은 신뢰도 적용 |
 | 기능성 표시 | 미백/주름/자외선 등 강한 근거 | 치료 표현으로 해석하지 않음 |
+
+ProductProfile 생성은 AI를 사용할 수 있다.
+단, AI는 상품 원본을 `benefitTraits`, `riskTraits`, `ingredientGroups`, `activeFamilies`, `evidenceSignals`로 번역하는 역할만 맡는다.
+
+원칙:
+
+- 추천 런타임은 AI 없이 룰 기반으로 동작한다.
+- AI 출력은 JSON schema와 enum으로 제한한다.
+- 서버 validator가 evidence, enum, safety proxy를 최종 검증한다.
+- 인터넷 검색으로 상품 정보를 임의 보강하지 않는다.
+- ProductProfile에는 사용자 상태별 suitableFor 필드를 저장하지 않는다.
 
 ## 4. Runtime Flow
 
@@ -84,7 +97,7 @@ Admin
 10. RecommendationResult 생성
 ```
 
-추천은 처음에는 상품추천 요청 시 동기 계산한다.  
+추천은 처음에는 상품추천 요청 시 동기 계산한다.
 상품 수가 늘거나 계산 비용이 커지면 `resultId + goals + policyHash` 단위 캐시를 검토한다.
 
 ## 5. Goal Conflict Flow
@@ -144,17 +157,18 @@ riskWarnings
 penaltyReasons
 fallbackApplied
 recommendationReason
-policyVersion
-profileVersion
 ```
 
 `scoreBand`는 사용자에게 정밀 점수로 노출하기보다 내부 디버깅 또는 적합도 구간 표시용으로 사용한다.
 
 ## 8. Optional AI Flow
 
-MVP의 기본 추천은 AI 없이 동작해야 한다.
+MVP의 기본 추천 런타임은 AI 없이 동작해야 한다.
 
-AI는 기본 추천을 대체하지 않고, 사용자가 별도 진입한 경우  
+ProductProfile 생성에는 AI-assisted profiler를 사용할 수 있다.
+이는 추천 판단이 아니라 상품 원본을 구조화된 색인으로 변환하는 전처리다.
+
+AI는 기본 추천을 대체하지 않고, 사용자가 별도 진입한 경우
 기본 후보군의 의미 비교와 설명 강화를 돕는 선택형 계층으로 둔다.
 
 ```text
@@ -173,7 +187,7 @@ AI 입력은 다음 데이터로 제한한다.
 - ProductProfile 후보군
 - 반드시 지켜야 하는 safety constraints
 
-AI 출력은 구조화된 recommendation candidate로 받고,  
+AI 출력은 구조화된 recommendation candidate로 받고,
 서버의 policy validator가 최종 검증한다.
 
 ## 9. First MVP Scope
@@ -182,11 +196,11 @@ AI 출력은 구조화된 recommendation candidate로 받고,
 
 - 상품 원본 등록 어드민
 - ProductRawData 저장
-- ProductProfile v1 생성
-- SkinInterpretation v1 생성
-- ProductSearchSpec v1 생성
+- AI-assisted ProductProfile 생성과 서버 validator
+- SkinInterpretation 생성
+- ProductSearchSpec 생성
 - 룰 기반 basic recommendation
 - 추천 이유/주의/대안 이유 저장 또는 응답
 
-초기에는 정밀 상품 처방이 아니라  
+초기에는 정밀 상품 처방이 아니라
 "피부 상태 기반의 안전한 상품 후보 정렬"을 목표로 한다.

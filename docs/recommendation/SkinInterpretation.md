@@ -59,8 +59,6 @@ MVP에서는 얇게 시작한다.
 ```json
 {
   "resultId": "sar_123",
-  "interpretationVersion": "skin-interpretation-v1",
-  "summaryType": "LIGHT_BALANCE",
   "routineIntent": "LIGHT_HYDRATION_BALANCE",
   "primaryNeeds": [
     { "trait": "HYDRATION_SUPPORT", "intensity": "PREFERRED", "source": "DRYNESS_MID" }
@@ -82,13 +80,19 @@ MVP에서는 얇게 시작한다.
 
 | 필드 | 의미 |
 | --- | --- |
-| summaryType | 상태 조합의 요약 타입 |
 | routineIntent | 추천 방향. 예: 장벽 우선, 가벼운 균형, 저자극 톤 케어 |
 | primaryNeeds | 현재 피부 상태상 우선 필요한 trait |
 | secondaryNeeds | 있으면 좋은 보조 trait |
 | riskConstraints | 상품 후보가 피하거나 주의해야 할 risk |
 | goalNeeds | 사용자가 선택한 개선 목표가 만든 boost |
 | goalConflictNotices | goal과 현재 피부상태가 충돌할 때 사용자 안내에 쓰는 구조 |
+
+MVP에서는 `interpretationVersion`과 `summaryType`을 두지 않는다.
+
+- `interpretationVersion`: 현재 규모에서는 버전별 교체/추적을 운영하지 않는다.
+- `summaryType`: 추천 조건을 직접 만들지 않는 요약 라벨이면 도메인 모델이 아니라 응답/View 계층에서 다룬다.
+
+`routineIntent`는 추천 점수보다 이후 루틴 제작 방향에 쓰일 수 있으므로 유지한다.
 
 ## 4. ProductSearchSpec v1
 

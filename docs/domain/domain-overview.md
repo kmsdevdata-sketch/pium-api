@@ -81,12 +81,15 @@
 - 성분 정규화
 - 성분군 분류
 - benefit/risk trait 추출
+- active family 추출
 - evidence/confidence 계산
 - ProductProfile 생성 및 재생성
 
 **특징**
 - Product 도메인의 원본 모델을 Recommendation 도메인으로 직접 노출하지 않는다.
 - 상품 상세페이지 claim은 사실이 아니라 낮은 신뢰도의 근거로만 다룬다.
+- MVP에서는 AI-assisted profiler가 ProductProfile 초안을 만들고 서버 validator가 enum/evidence/safety proxy를 검증한다.
+- AI는 ProductProfile 생성에만 사용하며, 추천 런타임과 safety gate는 룰 기반으로 동작한다.
 - 초기 상품 입력은 어드민이 올리브영 쇼핑큐레이터 등 외부 링크와 이미지를 등록하는 흐름을 우선한다.
 ---
 ### 4.3 [User](./UserDomain.md)

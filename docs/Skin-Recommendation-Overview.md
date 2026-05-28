@@ -4,7 +4,7 @@
 
 피움 추천은 "피부 고민 HIGH에 대응하는 상품 추천"이 아니다.
 
-목표는 사용자의 전체 피부 상태와 개선 목표를 함께 해석해서,  
+목표는 사용자의 전체 피부 상태와 개선 목표를 함께 해석해서,
 현재 피부가 감당할 수 있는 상품 조건을 만들고 그 조건으로 상품을 필터링/정렬하는 것이다.
 
 ## 2. 설계 원칙
@@ -44,7 +44,7 @@
 
 ## 4. SkinInterpretation
 
-`SkinAnalysisResult`는 진단 결과의 사실 데이터다.  
+`SkinAnalysisResult`는 진단 결과의 사실 데이터다.
 추천 엔진은 이를 바로 상품과 비교하지 않고 먼저 `SkinInterpretation`으로 해석한다.
 
 예:
@@ -61,7 +61,6 @@ BLEMISH LOW
 
 이 단계에서 생성하는 것:
 
-- 현재 피부 상태 요약 타입
 - 주요/보조 니즈
 - 주의해야 할 risk
 - routineIntent
@@ -91,7 +90,7 @@ categoryHints:
 - LOTION_CREAM
 ```
 
-즉 추천은 "전체 상품에 점수를 다 매긴 뒤 상위만 고르는 방식"이 아니라,  
+즉 추천은 "전체 상품에 점수를 다 매긴 뒤 상위만 고르는 방식"이 아니라,
 먼저 현재 피부상태에 맞는 검색 조건을 만든 뒤 후보를 좁히고 정렬한다.
 
 ## 6. Goal 반영
@@ -158,20 +157,42 @@ ProductProfile은 다음을 가진다.
 
 - benefitTraits
 - riskTraits
-- safetyTraits
-- traitStrength
+- ingredientGroups
+- activeFamilies
+- trait strength
 - confidence
-- evidenceSource
-- evidenceChain
+- evidenceSignals
+- warnings
+
+ProductProfile 생성은 AI-assisted profiler를 사용할 수 있다.
+다만 AI는 상품 원본 데이터를 구조화된 색인으로 번역할 뿐, 사용자별 추천 판단을 수행하지 않는다.
+
+```text
+ProductRawData
+-> AI ProductProfiler
+-> Structured JSON draft
+-> Server Validator
+-> ProductProfile 저장
+```
+
+추천 런타임과 safety gate는 AI 없이 룰 기반으로 동작한다.
 
 저장하지 않는 것:
 
 ```text
 suitableFor.DRYNESS_MID
 suitableFor.BARRIER_HIGH
+profileVersion
+leaveOn
+textureEstimate
+residueType
+activeIntensity
 ```
 
-이런 필드는 사용자 상태 의존적이므로 ProductProfile에 두지 않는다.  
+`suitableFor.*` 필드는 사용자 상태 의존적이므로 ProductProfile에 두지 않는다.
+`profileVersion`은 현재 규모에서 버전별 추적을 운영하지 않으므로 제외한다.
+`leaveOn`, `textureEstimate`, `residueType`, `activeIntensity`는 원본 텍스트만으로 안정적으로 확정하기 어렵거나 현재 추천 로직에 필수적이지 않으므로 제외한다.
+
 사용자 상태에 따른 적합성 판단은 ProductSearchSpec과 RecommendationPolicy가 런타임에 수행한다.
 
 ## 9. Fallback
@@ -194,7 +215,7 @@ categoryHints를 완화
 
 ## 10. 결론
 
-MVP 추천 시스템은 정밀 처방 엔진이 아니라,  
+MVP 추천 시스템은 정밀 처방 엔진이 아니라,
 중첩 피부상태 해석 기반의 안전한 상품 후보 정렬 시스템이다.
 
 핵심은 다음 순서다.

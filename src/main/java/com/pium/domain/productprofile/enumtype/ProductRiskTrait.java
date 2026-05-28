@@ -1,0 +1,12 @@
+package com.pium.domain.productprofile.enumtype;
+
+public enum ProductRiskTrait {
+    IRRITATION_RISK,
+    HIGH_IRRITATION_RISK,
+    FRAGRANCE_OR_ALLERGEN_RISK,
+    COMEDOGENIC_RISK,
+    DRYING_OR_STRIPPING_RISK,
+    STRONG_EXFOLIATION_EFFECT,
+    STRONG_ACTIVE_RISK,
+    HEAVY_OCCLUSIVE_RISK
+}

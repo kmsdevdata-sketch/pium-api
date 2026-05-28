@@ -7,7 +7,8 @@
 ```text
 사용자 입력(설문)
 -> 피부 상태 벡터 생성
--> 추천용 중간 해석(SkinNeedProfile)
+-> 피부 상태 해석(SkinInterpretation)
+-> 상품 검색 조건(ProductSearchSpec)
 -> 상품 원본 데이터 프로파일링(ProductProfile)
 -> 안전성 게이팅/상한선
 -> 추천 결과 생성
@@ -45,11 +46,13 @@
 ---
 #### 3.2 [Recommendation](./RecommendationDomain.md)
 **역할**
-사용자의 중첩 상태 해석과 제품 특성 프로파일을 비교해 안전한 추천 결과를 생성한다.
+사용자의 중첩 피부상태와 goal을 해석해 상품 검색 조건을 만들고, 제품 특성 프로파일과 비교해 안전한 추천 결과를 생성한다.
 
 **책임**
 - 추천 요청 처리 (RecommendationRequest)
-- SkinNeedProfile과 ProductProfile 적합도 계산
+- SkinInterpretation 생성
+- ProductSearchSpec 생성
+- ProductSearchSpec과 ProductProfile 적합도 계산
 - 위험도 기반 게이팅/상한선/패널티 적용
 - 제품별 점수 계산 및 정렬 (ProductScore)
 ---
@@ -78,12 +81,15 @@
 - 성분 정규화
 - 성분군 분류
 - benefit/risk trait 추출
+- active family 추출
 - evidence/confidence 계산
 - ProductProfile 생성 및 재생성
 
 **특징**
 - Product 도메인의 원본 모델을 Recommendation 도메인으로 직접 노출하지 않는다.
 - 상품 상세페이지 claim은 사실이 아니라 낮은 신뢰도의 근거로만 다룬다.
+- MVP에서는 AI-assisted profiler가 ProductProfile 초안을 만들고 서버 validator가 enum/evidence/safety proxy를 검증한다.
+- AI는 ProductProfile 생성에만 사용하며, 추천 런타임과 safety gate는 룰 기반으로 동작한다.
 - 초기 상품 입력은 어드민이 올리브영 쇼핑큐레이터 등 외부 링크와 이미지를 등록하는 흐름을 우선한다.
 ---
 ### 4.3 [User](./UserDomain.md)

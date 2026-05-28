@@ -47,18 +47,24 @@ Product 도메인은 제품 및 성분 정보를 관리하고,
 - 추천을 위한 trait 추출은 Product Profiling 계층의 책임이다.
 ---
 #### 3.3 ProductProfile
-제품이 피부 상태에 어떤 방향으로 작용하는지 표현하는 프로파일
+제품 원본 데이터를 추천 엔진이 읽을 수 있는 trait/evidence/risk 색인으로 변환한 프로파일
 
 - ProductId
-- Benefit Traits (예: hydration support, calming support)
-- Risk Traits (예: irritation risk, exfoliation strength)
-- Compatibility Traits (예: barrier friendly, sensitive-skin suitability)
+- Category / UsageStep
+- Benefit Traits (예: hydration support, soothing support)
+- Risk Traits (예: irritation risk, strong exfoliation effect)
+- Ingredient Groups
+- Active Families
+- Evidence Signals
+- Warnings
 
 특징:
 - 추천 도메인에서 상태 기반 비교에 사용하는 기준 데이터
 - Product Aggregate의 본질 속성이 아니라 Product Profiling / ACL의 산출물이다
+- 사용자 상태별 `suitableFor.*` 같은 적합성 필드는 저장하지 않는다
 - 수치 스케일/계수/임계값은 Product가 아닌 Recommendation 정책에서 해석한다
-- 원본 상품 데이터가 바뀌거나 profiling rule이 바뀌면 재생성될 수 있다
+- 원본 상품 데이터가 바뀌면 재생성될 수 있다
+- MVP에서는 AI-assisted profiler가 초안을 만들고 서버 validator가 검증하는 방식을 우선한다
 ---
 ### 4. Domain Flow
 

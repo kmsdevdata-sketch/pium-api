@@ -15,7 +15,11 @@ public enum RecommendationErrorCode implements ErrorCode {
     INVALID_GOAL_NEED(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_004", "유효하지 않은 추천 goal 니즈입니다."),
     INVALID_GOAL_CONFLICT_NOTICE(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_005", "유효하지 않은 goal 충돌 안내입니다."),
     INVALID_SKIN_METRIC_LEVELS(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_006", "유효하지 않은 피부 지표 레벨입니다."),
-    INVALID_RECOMMENDATION_POLICY(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_007", "유효하지 않은 추천 정책 입력입니다.");
+    INVALID_RECOMMENDATION_POLICY(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_007", "유효하지 않은 추천 정책 입력입니다."),
+    INVALID_PRODUCT_SEARCH_SPEC(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_008", "유효하지 않은 상품 검색 조건입니다."),
+    INVALID_TRAIT_REQUIREMENT(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_009", "유효하지 않은 필수 trait 조건입니다."),
+    INVALID_TRAIT_PREFERENCE(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_010", "유효하지 않은 선호 trait 조건입니다."),
+    INVALID_GOAL_TRAIT_BOOST(HttpStatus.BAD_REQUEST, "RECOMMENDATION_400_011", "유효하지 않은 goal trait boost입니다.");
 
     private final HttpStatus status;
     private final String code;

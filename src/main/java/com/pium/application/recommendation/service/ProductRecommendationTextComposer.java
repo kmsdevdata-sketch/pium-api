@@ -77,9 +77,9 @@ public class ProductRecommendationTextComposer {
             return reasonFor(trait.get());
         }
         if (!candidate.penaltyRisks().isEmpty() || !candidate.cautionRisks().isEmpty()) {
-            return "추천 조건 일부와 맞지만, 사용 전 참고할 점이 있어 함께 표시했어요.";
+            return "피부 조건과 일부 맞는 후보지만, 사용 전 확인할 포인트가 있어 함께 표시했어요.";
         }
-        return "현재 피부 상태에 무리 없는 기본 관리 후보로 반영했어요.";
+        return "최근 진단에서 강한 부담 신호가 적어 기본 관리 후보로 반영했어요.";
     }
 
     List<ProductRecommendationDetailView.ReasonDetailView> reasonDetails(
@@ -90,7 +90,7 @@ public class ProductRecommendationTextComposer {
         if (trait.isEmpty()) {
             return List.of(new ProductRecommendationDetailView.ReasonDetailView(
                     "추천에 반영한 방식",
-                    "현재 추천 조건 일부와 맞아 참고 후보로 반영했어요."
+                    "피부 조건과 상품 포인트가 일부 맞아 참고 후보로 반영했어요."
             ));
         }
 
@@ -106,7 +106,7 @@ public class ProductRecommendationTextComposer {
                 ),
                 new ProductRecommendationDetailView.ReasonDetailView(
                         "추천에 반영한 방식",
-                        "그래서 " + careLabel(matchedTrait) + " 방향의 상품으로 추천 순위에 반영했어요."
+                        "그래서 " + careLabel(matchedTrait) + " 포인트는 추천에 반영하고, 사용 전 주의할 신호는 함께 확인했어요."
                 )
         );
     }
@@ -114,7 +114,7 @@ public class ProductRecommendationTextComposer {
     List<String> recommendationReasons(ScoredRecommendationCandidate candidate) {
         return primaryMatchedTrait(candidate)
                 .map(trait -> List.of(reasonFor(trait)))
-                .orElseGet(() -> List.of("현재 추천 조건 일부와 맞아 참고 후보로 반영했어요."));
+                .orElseGet(() -> List.of("피부 조건과 상품 포인트가 일부 맞아 참고 후보로 반영했어요."));
     }
 
     List<String> cautions(ScoredRecommendationCandidate candidate) {
@@ -128,7 +128,7 @@ public class ProductRecommendationTextComposer {
                 .toList();
 
         if (cautions.isEmpty()) {
-            return List.of("현재 추천 기준에서 특별히 강조할 주의 신호는 적어요.");
+            return List.of("현재 매칭 기준에서 크게 낮춰야 할 주의 신호는 적어요.");
         }
         return cautions;
     }
@@ -169,13 +169,13 @@ public class ProductRecommendationTextComposer {
 
     private String headline(SkinInterpretation.RoutineIntent intent) {
         return switch (intent) {
-            case BARRIER_RECOVERY -> "장벽 케어와 편안한 사용감을 우선으로 추천했어요.";
-            case SOOTHING_FIRST -> "진정과 저자극 방향을 우선으로 추천했어요.";
-            case HYDRATION_BALANCE -> "수분 충전을 우선으로 추천했어요.";
-            case SEBUM_BLEMISH_BALANCE -> "피지 밸런스와 트러블 케어를 함께 봤어요.";
-            case TONE_CARE -> "톤 케어와 자외선 차단 방향을 함께 봤어요.";
-            case ANTI_AGING_CARE -> "탄력 케어와 보호 방향을 함께 봤어요.";
-            case BASIC_BALANCE -> "현재 피부에 무리 없는 기본 관리 상품을 우선으로 봤어요.";
+            case BARRIER_RECOVERY -> "장벽 부담을 먼저 보고, 케어 포인트와 자극 부담을 함께 확인했어요.";
+            case SOOTHING_FIRST -> "민감 신호를 기준으로, 진정 포인트와 자극 부담을 함께 확인했어요.";
+            case HYDRATION_BALANCE -> "건조 신호를 기준으로, 수분 케어 포인트와 사용 전 주의점을 함께 봤어요.";
+            case SEBUM_BLEMISH_BALANCE -> "피지와 트러블 신호를 함께 보고, 부담이 적은 케어 포인트를 골랐어요.";
+            case TONE_CARE -> "톤 케어 목표와 피부 부담 신호를 함께 보고 상품을 골랐어요.";
+            case ANTI_AGING_CARE -> "탄력 케어 목표와 피부 부담 신호를 함께 보고 상품을 골랐어요.";
+            case BASIC_BALANCE -> "강한 부담 신호가 적어, 기본 케어에 맞는 상품을 중심으로 골랐어요.";
         };
     }
 
@@ -193,7 +193,7 @@ public class ProductRecommendationTextComposer {
         if (!reasons.isEmpty()) {
             return reasons;
         }
-        return List.of("최근 진단 결과에서 강하게 치우친 신호가 적어 기본 관리 방향으로 추천했어요.");
+        return List.of("최근 진단 결과에서 강하게 치우친 신호가 적어 기본 관리 방향으로 정리했어요.");
     }
 
     private Optional<RecommendationTrait> primaryMatchedTrait(ScoredRecommendationCandidate candidate) {
@@ -221,28 +221,28 @@ public class ProductRecommendationTextComposer {
 
     private String reasonFor(RecommendationTrait trait) {
         return switch (trait) {
-            case HYDRATION_SUPPORT -> "건조 신호에 맞춰 수분을 채우고 유지하는 방향의 상품을 우선 반영했어요.";
-            case BARRIER_SUPPORT -> "장벽 부담 신호를 고려해 피부를 편안하게 유지하는 방향을 함께 반영했어요.";
-            case SOOTHING_SUPPORT -> "민감하게 반응할 수 있는 상태를 고려해 진정 케어 방향을 우선 반영했어요.";
-            case SEBUM_CONTROL_SUPPORT -> "피지 신호를 고려해 유분 균형을 잡는 방향의 상품을 반영했어요.";
-            case BLEMISH_CARE_SUPPORT -> "트러블 고민과 연결되는 관리 방향을 추천 순위에 반영했어요.";
-            case BRIGHTENING_SUPPORT -> "선택한 톤 케어 목표와 연결되는 상품 포인트를 함께 반영했어요.";
-            case ANTI_AGING_SUPPORT -> "탄력·주름 고민과 연결되는 관리 방향을 추천 순위에 반영했어요.";
-            case UV_PROTECTION -> "톤과 노화 고민에 영향을 줄 수 있는 자외선 차단 방향을 함께 반영했어요.";
-            case EXFOLIATION_EFFECT -> "결 정돈 목표와 연결되는 상품 포인트를 참고로 반영했어요.";
+            case HYDRATION_SUPPORT -> "건조 신호가 높아, 상품의 수분 케어 포인트가 확인된 후보를 우선 매칭했어요.";
+            case BARRIER_SUPPORT -> "장벽 부담 신호가 있어, 장벽 케어 포인트가 있는 상품을 우선 매칭했어요.";
+            case SOOTHING_SUPPORT -> "민감하게 반응할 수 있는 신호가 있어, 진정 케어 포인트를 우선 확인했어요.";
+            case SEBUM_CONTROL_SUPPORT -> "피지 신호를 고려해, 유분 균형을 돕는 포인트가 있는 상품을 반영했어요.";
+            case BLEMISH_CARE_SUPPORT -> "트러블 고민과 피부 부담을 함께 보고, 트러블 케어 포인트를 반영했어요.";
+            case BRIGHTENING_SUPPORT -> "톤 케어 목표와 피부 신호를 함께 보고, 톤 케어 포인트를 반영했어요.";
+            case ANTI_AGING_SUPPORT -> "탄력·주름 고민과 피부 부담을 함께 보고, 탄력 케어 포인트를 반영했어요.";
+            case UV_PROTECTION -> "톤과 탄력 고민에 영향을 줄 수 있어, 자외선 차단 포인트를 함께 반영했어요.";
+            case EXFOLIATION_EFFECT -> "결 정돈 목표는 반영하되, 피부 부담 신호와 함께 확인했어요.";
         };
     }
 
     private String diagnosisReasonFor(RecommendationTrait trait) {
         return switch (trait) {
-            case HYDRATION_SUPPORT -> "최근 진단에서 건조 신호를 확인했어요.";
-            case BARRIER_SUPPORT -> "최근 진단에서 장벽 부담 신호를 함께 고려했어요.";
-            case SOOTHING_SUPPORT -> "최근 진단에서 민감하게 반응할 수 있는 신호를 고려했어요.";
-            case SEBUM_CONTROL_SUPPORT -> "최근 진단에서 피지 균형과 관련된 신호를 확인했어요.";
+            case HYDRATION_SUPPORT -> "최근 진단에서 건조 신호가 높게 보여 수분을 먼저 채우는 방향이 필요해요.";
+            case BARRIER_SUPPORT -> "최근 진단에서 장벽 부담 신호가 보여 피부를 편안하게 유지하는 방향을 함께 봤어요.";
+            case SOOTHING_SUPPORT -> "최근 진단에서 민감하게 반응할 수 있는 신호가 보여 자극 부담을 낮추는 방향을 봤어요.";
+            case SEBUM_CONTROL_SUPPORT -> "최근 진단에서 피지 균형과 관련된 신호가 보여 유분 밸런스를 함께 봤어요.";
             case BLEMISH_CARE_SUPPORT -> "최근 진단과 선택한 고민에서 트러블 케어 방향을 확인했어요.";
-            case BRIGHTENING_SUPPORT -> "선택한 고민과 피부 톤 신호를 함께 고려했어요.";
-            case ANTI_AGING_SUPPORT -> "탄력·주름 고민과 관련된 신호를 함께 고려했어요.";
-            case UV_PROTECTION -> "톤과 노화 고민을 고려해 자외선 차단 방향을 함께 봤어요.";
+            case BRIGHTENING_SUPPORT -> "선택한 고민과 피부 톤 신호를 함께 보고 톤 케어 방향을 확인했어요.";
+            case ANTI_AGING_SUPPORT -> "탄력·주름 고민과 관련된 신호를 보고 탄력 케어 방향을 확인했어요.";
+            case UV_PROTECTION -> "톤과 탄력 고민을 고려해 자외선 차단 포인트를 함께 봤어요.";
             case EXFOLIATION_EFFECT -> "결 정돈 목표는 반영하되 피부 부담 가능성도 함께 봤어요.";
         };
     }
@@ -267,8 +267,8 @@ public class ProductRecommendationTextComposer {
     private String cautionFor(AppliedRisk risk) {
         String label = cautionLabel(risk.trait());
         String suffix = risk.policy() == RiskConstraint.Policy.SOFT_PENALTY
-                ? "가 있어 추천 순위를 낮추고 표시했어요."
-                : "가 있어 사용 전 참고할 점으로 표시했어요.";
+                ? "가 현재 피부 상태에 부담이 될 수 있어 순위를 낮추고 참고점으로 표시했어요."
+                : "가 확인돼 현재 피부 상태에서는 사용 전 참고할 점으로 표시했어요.";
         return label + suffix;
     }
 }

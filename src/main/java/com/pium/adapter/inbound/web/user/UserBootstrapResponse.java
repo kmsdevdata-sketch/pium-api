@@ -4,15 +4,13 @@ import com.pium.application.user.bootstrap.dto.UserBootstrapView;
 
 public record UserBootstrapResponse(
         String userName,
-        boolean hasDiagnosis,
-        String entryPoint
+        boolean hasDiagnosis
 ) {
 
     public static UserBootstrapResponse from(UserBootstrapView view) {
         return new UserBootstrapResponse(
                 view.userName(),
-                view.hasDiagnosis(),
-                view.entryPoint().name()
+                view.hasDiagnosis()
         );
     }
 }

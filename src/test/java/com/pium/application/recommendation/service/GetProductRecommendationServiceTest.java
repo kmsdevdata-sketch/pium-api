@@ -61,7 +61,8 @@ class GetProductRecommendationServiceTest {
 
         assertThat(response.analysisResultId()).isEqualTo(result.getId().value());
         assertThat(response.adDisclosure()).isEqualTo(ProductRecommendationTextComposer.AD_DISCLOSURE);
-        assertThat(response.recommendationSummary().headline()).isEqualTo("수분 충전을 우선으로 추천했어요.");
+        assertThat(response.recommendationSummary().headline())
+                .isEqualTo("건조 신호를 기준으로, 수분 케어 포인트와 사용 전 주의점을 함께 봤어요.");
         assertThat(response.topRecommendations()).hasSize(1);
         assertThat(response.topRecommendations().get(0).careTags()).contains("수분 충전");
         assertThat(response.topRecommendations().get(0).cautionPoints()).contains("향 성분 주의");

@@ -112,7 +112,7 @@ class UserControllerTest {
     @Test
     void getUserBootstrap_returnsApiResponse() throws Exception {
         given(getUserBootstrap.getUserBootstrap(UserId.of("user-test-001")))
-                .willReturn(new UserBootstrapView("피움닉네임", true, UserBootstrapView.EntryPoint.HOME));
+                .willReturn(new UserBootstrapView("피움닉네임", true));
 
         mockMvc.perform(get("/api/v1/users/me/bootstrap")
                         .with(user(AuthFixture.createAuthenticatedUser(UserId.of("user-test-001"))))
@@ -122,7 +122,7 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.userName").value("피움닉네임"))
                 .andExpect(jsonPath("$.data.hasDiagnosis").value(true))
-                .andExpect(jsonPath("$.data.entryPoint").value("HOME"));
+                .andExpect(jsonPath("$.data.entryPoint").doesNotExist());
     }
 
     @Test
@@ -167,8 +167,8 @@ class UserControllerTest {
                                 "한줄 요약"
                         ),
                         new ProductRecommendationListView.RecommendationSummaryView(
-                                "수분 충전을 우선으로 추천했어요.",
-                                List.of("최근 진단에서 건조 신호를 확인했어요."),
+                                "건조 신호를 기준으로, 수분 케어 포인트와 사용 전 주의점을 함께 봤어요.",
+                                List.of("최근 진단에서 건조 신호가 높게 보여 수분을 먼저 채우는 방향이 필요해요."),
                                 List.of("추천은 화장품 선택 참고용이며 의학적 진단이 아니에요.")
                         ),
                         "이 포스팅은 올리브영 쇼핑 큐레이터 활동의 일환으로, 구매 시 일정 금액의 수수료를 제공받습니다.",
@@ -186,7 +186,8 @@ class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success").value(true))
                 .andExpect(jsonPath("$.data.analysisResultId").value("result-001"))
-                .andExpect(jsonPath("$.data.recommendationSummary.headline").value("수분 충전을 우선으로 추천했어요."))
+                .andExpect(jsonPath("$.data.recommendationSummary.headline")
+                        .value("건조 신호를 기준으로, 수분 케어 포인트와 사용 전 주의점을 함께 봤어요."))
                 .andExpect(jsonPath("$.data.adDisclosure").value("이 포스팅은 올리브영 쇼핑 큐레이터 활동의 일환으로, 구매 시 일정 금액의 수수료를 제공받습니다."))
                 .andExpect(jsonPath("$.data.topRecommendations[0].careTags[0]").value("수분 충전"))
                 .andExpect(jsonPath("$.data.topRecommendations[0].cautionPoints[0]").value("향 성분 주의"));
@@ -210,10 +211,10 @@ class UserControllerTest {
                         "잘 맞음",
                         List.of(new ProductRecommendationDetailView.ReasonDetailView(
                                 "진단에서 본 점",
-                                "최근 진단에서 건조 신호를 확인했어요."
+                                "최근 진단에서 건조 신호가 높게 보여 수분을 먼저 채우는 방향이 필요해요."
                         )),
-                        List.of("건조 신호에 맞춰 수분을 채우고 유지하는 방향의 상품을 우선 반영했어요."),
-                        List.of("향 성분 주의가 있어 사용 전 참고할 점으로 표시했어요."),
+                        List.of("건조 신호가 높아, 상품의 수분 케어 포인트가 확인된 후보를 우선 매칭했어요."),
+                        List.of("향 성분 주의가 확인돼 현재 피부 상태에서는 사용 전 참고할 점으로 표시했어요."),
                         List.of(new ProductRecommendationDetailView.TagView("HYDRATION_SUPPORT", "수분 충전")),
                         List.of(new ProductRecommendationDetailView.TagView("FRAGRANCE_OR_ALLERGEN_RISK", "향 성분 주의")),
                         "이 포스팅은 올리브영 쇼핑 큐레이터 활동의 일환으로, 구매 시 일정 금액의 수수료를 제공받습니다."
@@ -245,7 +246,7 @@ class UserControllerTest {
                 "보습 단계",
                 "HIGH",
                 "잘 맞음",
-                "건조 신호에 맞춰 수분을 채우고 유지하는 방향의 상품을 우선 반영했어요.",
+                "건조 신호가 높아, 상품의 수분 케어 포인트가 확인된 후보를 우선 매칭했어요.",
                 List.of("수분 충전"),
                 List.of("향 성분 주의")
         );

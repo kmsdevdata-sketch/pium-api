@@ -21,7 +21,7 @@ class GetUserBootstrapServiceTest {
     private final GetUserBootstrapService service = new GetUserBootstrapService(checkUserDiagnosisPort,loadUserProfilePort);
 
     @Test
-    void getUserBootstrap_진단이력이_없으면_설문으로_진입한다() {
+    void getUserBootstrap_진단이력이_없으면_hasDiagnosis_false를_반환한다() {
         UserId userId = UserId.of("user-test-001");
         when(loadUserProfilePort.findByUserId(userId))
                 .thenReturn(Optional.of(UserProfile.create(userId, "피움닉네임", null)));
@@ -31,13 +31,12 @@ class GetUserBootstrapServiceTest {
 
         assertThat(result.userName()).isEqualTo("피움닉네임");
         assertThat(result.hasDiagnosis()).isFalse();
-        assertThat(result.entryPoint()).isEqualTo(UserBootstrapView.EntryPoint.SURVEY);
         verify(loadUserProfilePort).findByUserId(userId);
         verify(checkUserDiagnosisPort).existsByUserId(userId);
     }
 
     @Test
-    void getUserBootstrap_진단이력이_있으면_Home으로_진입한다() {
+    void getUserBootstrap_진단이력이_있으면_hasDiagnosis_true를_반환한다() {
         UserId userId = UserId.of("user-test-002");
         when(loadUserProfilePort.findByUserId(userId))
                 .thenReturn(Optional.of(UserProfile.create(userId, "피움닉네임", null)));
@@ -47,7 +46,6 @@ class GetUserBootstrapServiceTest {
 
         assertThat(result.userName()).isEqualTo("피움닉네임");
         assertThat(result.hasDiagnosis()).isTrue();
-        assertThat(result.entryPoint()).isEqualTo(UserBootstrapView.EntryPoint.HOME);
         verify(loadUserProfilePort).findByUserId(userId);
         verify(checkUserDiagnosisPort).existsByUserId(userId);
     }

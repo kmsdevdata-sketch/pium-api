@@ -31,10 +31,7 @@ public class GetUserBootstrapService implements GetUserBootstrap{
 
 
         boolean hasDiagnosis = checkUserDiagnosisPort.existsByUserId(userId);
-        UserBootstrapView.EntryPoint entryPoint = hasDiagnosis
-                ? UserBootstrapView.EntryPoint.HOME
-                : UserBootstrapView.EntryPoint.SURVEY;
 
-        return new UserBootstrapView(userName,hasDiagnosis, entryPoint);
+        return new UserBootstrapView(userName, hasDiagnosis);
     }
 }

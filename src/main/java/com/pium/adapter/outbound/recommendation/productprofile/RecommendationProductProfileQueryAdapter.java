@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pium.adapter.outbound.productprofile.persistence.repository.ProductProfileJpaRepository;
 import com.pium.application.recommendation.required.LoadRecommendationProductProfilePort;
 import com.pium.domain.productprofile.model.ProductProfile;
-import com.pium.domain.recommendation.model.ProductSearchSpec;
+import com.pium.domain.recommendation.model.search.ProductSearchSpec;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;

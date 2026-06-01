@@ -8,7 +8,7 @@ import com.pium.domain.product.fixture.ProductFixture;
 import com.pium.domain.product.model.Product;
 import com.pium.domain.productprofile.fixture.ProductProfileFixture;
 import com.pium.domain.productprofile.model.ProductProfile;
-import com.pium.domain.recommendation.model.ProductSearchSpec;
+import com.pium.domain.recommendation.model.search.ProductSearchSpec;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;

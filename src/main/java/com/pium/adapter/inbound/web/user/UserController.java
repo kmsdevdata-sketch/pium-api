@@ -2,6 +2,9 @@ package com.pium.adapter.inbound.web.user;
 
 import com.pium.adapter.inbound.response.ApiResponse;
 import com.pium.adapter.inbound.web.auth.AuthenticatedUser;
+import com.pium.application.recommendation.dto.ProductRecommendationDetailView;
+import com.pium.application.recommendation.dto.ProductRecommendationListView;
+import com.pium.application.recommendation.provided.GetProductRecommendation;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultListView;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultView;
 import com.pium.application.skinanalysis.result.provided.GetSkinAnalysisResult;
@@ -15,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,6 +30,7 @@ public class UserController {
     private final GetUserHome getUserHome;
     private final GetUserBootstrap getUserBootstrap;
     private final GetSkinAnalysisResult getSkinAnalysisResult;
+    private final GetProductRecommendation getProductRecommendation;
 
     /**
      * 현재 로그인 사용자의 홈 요약 조회 API
@@ -84,5 +89,23 @@ public class UserController {
                 SkinAnalysisResultId.of(resultId)
         );
         return ApiResponse.ok(SkinAnalysisResultResponse.from(response));
+    }
+
+    @GetMapping("/me/recommendations")
+    public ApiResponse<ProductRecommendationListView> getLatestRecommendations(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @RequestParam(defaultValue = "ALL") String category
+    ) {
+        ProductRecommendationListView response = getProductRecommendation.getLatest(UserId.of(user.userId()), category);
+        return ApiResponse.ok(response);
+    }
+
+    @GetMapping("/me/recommendations/{productId}")
+    public ApiResponse<ProductRecommendationDetailView> getRecommendationDetail(
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @PathVariable String productId
+    ) {
+        ProductRecommendationDetailView response = getProductRecommendation.getDetail(UserId.of(user.userId()), productId);
+        return ApiResponse.ok(response);
     }
 }

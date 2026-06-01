@@ -1,6 +1,10 @@
 package com.pium.adapter.inbound.web.user;
 
 import com.pium.application.auth.fixture.AuthFixture;
+import com.pium.application.recommendation.dto.ProductRecommendationDetailView;
+import com.pium.application.recommendation.dto.ProductRecommendationItemView;
+import com.pium.application.recommendation.dto.ProductRecommendationListView;
+import com.pium.application.recommendation.provided.GetProductRecommendation;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultListView;
 import com.pium.application.skinanalysis.result.dto.SkinAnalysisResultView;
 import com.pium.application.skinanalysis.result.provided.GetSkinAnalysisResult;
@@ -40,6 +44,9 @@ class UserControllerTest {
 
     @MockitoBean
     private GetSkinAnalysisResult getSkinAnalysisResult;
+
+    @MockitoBean
+    private GetProductRecommendation getProductRecommendation;
 
     @Test
     void listSkinAnalysisResults_returnsApiResponse() throws Exception {
@@ -148,5 +155,99 @@ class UserControllerTest {
                 .andExpect(jsonPath("$.data.skinMetricScores[0].metricKey").value("DRYNESS"))
                 .andExpect(jsonPath("$.data.categoryDetails[0].insight").value("인사이트 문장"))
                 .andExpect(jsonPath("$.data.summary").value("종합 해석"));
+    }
+
+    @Test
+    void getLatestRecommendations_returnsApiResponse() throws Exception {
+        given(getProductRecommendation.getLatest(UserId.of("user-test-001"), "ALL"))
+                .willReturn(new ProductRecommendationListView(
+                        "result-001",
+                        new ProductRecommendationListView.BasedOnView(
+                                LocalDateTime.of(2026, 5, 17, 15, 12, 41),
+                                "한줄 요약"
+                        ),
+                        new ProductRecommendationListView.RecommendationSummaryView(
+                                "수분 충전을 우선으로 추천했어요.",
+                                List.of("최근 진단에서 건조 신호를 확인했어요."),
+                                List.of("추천은 화장품 선택 참고용이며 의학적 진단이 아니에요.")
+                        ),
+                        "이 포스팅은 올리브영 쇼핑 큐레이터 활동의 일환으로, 구매 시 일정 금액의 수수료를 제공받습니다.",
+                        new ProductRecommendationListView.FilterView(
+                                "ALL",
+                                List.of(new ProductRecommendationListView.CategoryFilterView("ALL", "전체"))
+                        ),
+                        List.of(recommendationItem(1)),
+                        List.of()
+                ));
+
+        mockMvc.perform(get("/api/v1/users/me/recommendations")
+                        .with(user(AuthFixture.createAuthenticatedUser(UserId.of("user-test-001"))))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.analysisResultId").value("result-001"))
+                .andExpect(jsonPath("$.data.recommendationSummary.headline").value("수분 충전을 우선으로 추천했어요."))
+                .andExpect(jsonPath("$.data.adDisclosure").value("이 포스팅은 올리브영 쇼핑 큐레이터 활동의 일환으로, 구매 시 일정 금액의 수수료를 제공받습니다."))
+                .andExpect(jsonPath("$.data.topRecommendations[0].careTags[0]").value("수분 충전"))
+                .andExpect(jsonPath("$.data.topRecommendations[0].cautionPoints[0]").value("향 성분 주의"));
+    }
+
+    @Test
+    void getRecommendationDetail_returnsApiResponse() throws Exception {
+        given(getProductRecommendation.getDetail(UserId.of("user-test-001"), "product-001"))
+                .willReturn(new ProductRecommendationDetailView(
+                        "product-001",
+                        "피움랩",
+                        "장벽 진정 크림",
+                        24000,
+                        "https://image.example/product.png",
+                        "https://oliveyoung.example/products/1",
+                        "LOTION_CREAM",
+                        "로션/크림",
+                        "MOISTURIZE",
+                        "보습 단계",
+                        "HIGH",
+                        "잘 맞음",
+                        List.of(new ProductRecommendationDetailView.ReasonDetailView(
+                                "진단에서 본 점",
+                                "최근 진단에서 건조 신호를 확인했어요."
+                        )),
+                        List.of("건조 신호에 맞춰 수분을 채우고 유지하는 방향의 상품을 우선 반영했어요."),
+                        List.of("향 성분 주의가 있어 사용 전 참고할 점으로 표시했어요."),
+                        List.of(new ProductRecommendationDetailView.TagView("HYDRATION_SUPPORT", "수분 충전")),
+                        List.of(new ProductRecommendationDetailView.TagView("FRAGRANCE_OR_ALLERGEN_RISK", "향 성분 주의")),
+                        "이 포스팅은 올리브영 쇼핑 큐레이터 활동의 일환으로, 구매 시 일정 금액의 수수료를 제공받습니다."
+                ));
+
+        mockMvc.perform(get("/api/v1/users/me/recommendations/product-001")
+                        .with(user(AuthFixture.createAuthenticatedUser(UserId.of("user-test-001"))))
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true))
+                .andExpect(jsonPath("$.data.productId").value("product-001"))
+                .andExpect(jsonPath("$.data.scoreBandLabel").value("잘 맞음"))
+                .andExpect(jsonPath("$.data.reasonDetails[0].title").value("진단에서 본 점"))
+                .andExpect(jsonPath("$.data.careTags[0].label").value("수분 충전"))
+                .andExpect(jsonPath("$.data.cautionPoints[0].label").value("향 성분 주의"));
+    }
+
+    private ProductRecommendationItemView recommendationItem(int rank) {
+        return new ProductRecommendationItemView(
+                rank,
+                "product-001",
+                "피움랩",
+                "장벽 진정 크림",
+                24000,
+                "https://image.example/product.png",
+                "LOTION_CREAM",
+                "로션/크림",
+                "MOISTURIZE",
+                "보습 단계",
+                "HIGH",
+                "잘 맞음",
+                "건조 신호에 맞춰 수분을 채우고 유지하는 방향의 상품을 우선 반영했어요.",
+                List.of("수분 충전"),
+                List.of("향 성분 주의")
+        );
     }
 }

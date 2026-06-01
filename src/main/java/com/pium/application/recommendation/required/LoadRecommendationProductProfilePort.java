@@ -1,7 +1,7 @@
 package com.pium.application.recommendation.required;
 
 import com.pium.domain.productprofile.model.ProductProfile;
-import com.pium.domain.recommendation.model.ProductSearchSpec;
+import com.pium.domain.recommendation.model.search.ProductSearchSpec;
 
 import java.util.List;
 

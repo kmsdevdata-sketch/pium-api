@@ -19,6 +19,7 @@ import com.pium.domain.productprofile.model.ProductProfile;
 import com.pium.domain.recommendation.engine.interpretation.SkinInterpreter;
 import com.pium.domain.recommendation.engine.scoring.RecommendationPolicy;
 import com.pium.domain.recommendation.engine.search.ProductSearchSpecGenerator;
+import com.pium.domain.recommendation.enumtype.ScoreBand;
 import com.pium.domain.recommendation.model.interpretation.SkinInterpretation;
 import com.pium.domain.recommendation.model.scoring.ScoredRecommendationCandidate;
 import com.pium.domain.recommendation.model.search.ProductSearchSpec;
@@ -59,13 +60,17 @@ public class GetProductRecommendationService implements GetProductRecommendation
                 .filter(scoredProduct -> selectedCategory == null || scoredProduct.product.getCategory() == selectedCategory)
                 .toList();
 
-        List<ProductRecommendationItemView> topRecommendations = scoredProducts.stream()
+        List<ScoredProduct> topScoredProducts = scoredProducts.stream()
+                .filter(this::isTopRecommendation)
                 .limit(TOP_RECOMMENDATION_LIMIT)
+                .toList();
+
+        List<ProductRecommendationItemView> topRecommendations = topScoredProducts.stream()
                 .map(this::toItemView)
                 .toList();
 
         List<ProductRecommendationItemView> recommendations = scoredProducts.stream()
-                .skip(TOP_RECOMMENDATION_LIMIT)
+                .filter(scoredProduct -> !topScoredProducts.contains(scoredProduct))
                 .map(this::toItemView)
                 .toList();
 
@@ -75,7 +80,7 @@ public class GetProductRecommendationService implements GetProductRecommendation
                         result.getCreatedAt(),
                         skinAnalysisResultViewComposer.composeListItem(result).oneLiner()
                 ),
-                textComposer.summary(interpretation),
+                textComposer.summary(interpretation, scoredProducts.isEmpty()),
                 ProductRecommendationTextComposer.AD_DISCLOSURE,
                 new ProductRecommendationListView.FilterView(
                         selectedCategory == null ? "ALL" : selectedCategory.name(),
@@ -84,6 +89,10 @@ public class GetProductRecommendationService implements GetProductRecommendation
                 topRecommendations,
                 recommendations
         );
+    }
+
+    private boolean isTopRecommendation(ScoredProduct scoredProduct) {
+        return scoredProduct.candidate.scoreBand() != ScoreBand.LOW;
     }
 
     @Override

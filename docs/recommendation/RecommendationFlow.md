@@ -93,7 +93,7 @@ ProductProfile 생성은 AI를 사용할 수 있다.
 6. Hard Gate 적용
 7. Required/Preferred/Goal trait 매칭
 8. Risk Penalty와 Caution 문구 생성
-9. 후보 부족 시 Fallback 적용
+9. 최소 적합 기준 통과 후보만 노출
 10. RecommendationResult 생성
 ```
 
@@ -160,6 +160,9 @@ recommendationReason
 ```
 
 `scoreBand`는 사용자에게 정밀 점수로 노출하기보다 내부 디버깅 또는 적합도 구간 표시용으로 사용한다.
+
+현재 MVP에서는 후보가 부족하다는 이유로 조건을 자동 완화해 상품을 채우지 않는다.
+조건에 충분히 맞는 상품이 없으면 빈 추천 목록과 후보 부족 안내를 반환한다.
 
 ## 8. Optional AI Flow
 

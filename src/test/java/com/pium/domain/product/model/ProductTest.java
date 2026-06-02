@@ -26,7 +26,6 @@ class ProductTest {
         assertThat(product.getProductName()).isEqualTo("장벽 진정 크림");
         assertThat(product.getCategory()).isEqualTo(ProductCategory.LOTION_CREAM);
         assertThat(product.getUsageStep()).isEqualTo(UsageStep.MOISTURIZE);
-        assertThat(product.getPrice()).isEqualTo(24000);
         assertThat(product.getFunctionalLabels()).containsExactly(FunctionalLabel.BARRIER_FUNCTION_RECOVERY);
         assertThat(product.getStatus()).isEqualTo(ProductStatus.ACTIVE);
         assertThat(product.getCreatedAt()).isEqualTo(product.getUpdatedAt());
@@ -43,7 +42,6 @@ class ProductTest {
                 product.getProductName(),
                 product.getCategory(),
                 product.getUsageStep(),
-                product.getPrice(),
                 product.getImageUrl(),
                 product.getIngredientText(),
                 product.getClaims(),
@@ -70,7 +68,6 @@ class ProductTest {
                 "수분 진정 세럼",
                 ProductCategory.ESSENCE_SERUM,
                 UsageStep.TREAT,
-                18000,
                 null,
                 "정제수, 글리세린, 나이아신아마이드",
                 "수분 공급 세럼",
@@ -96,21 +93,6 @@ class ProductTest {
                 "상품",
                 ProductCategory.TONER,
                 UsageStep.PREP,
-                1000,
-                null,
-                null,
-                null,
-                List.of(),
-                null
-        )).isInstanceOf(ProductException.class);
-
-        assertThatThrownBy(() -> Product.create(
-                "https://source.example",
-                "브랜드",
-                "상품",
-                ProductCategory.TONER,
-                UsageStep.PREP,
-                -1,
                 null,
                 null,
                 null,

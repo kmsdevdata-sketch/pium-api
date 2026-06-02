@@ -23,7 +23,6 @@ public class Product {
     private String productName;
     private ProductCategory category;
     private UsageStep usageStep;
-    private int price;
     private String imageUrl;
     private String ingredientText;
     private String claims;
@@ -39,7 +38,6 @@ public class Product {
             String productName,
             ProductCategory category,
             UsageStep usageStep,
-            int price,
             String imageUrl,
             String ingredientText,
             String claims,
@@ -53,7 +51,6 @@ public class Product {
         validateProductName(productName);
         validateCategory(category);
         validateUsageStep(usageStep);
-        validatePrice(price);
         validateStatus(status);
 
         this.id = id;
@@ -62,7 +59,6 @@ public class Product {
         this.productName = productName.trim();
         this.category = category;
         this.usageStep = usageStep;
-        this.price = price;
         this.imageUrl = normalizeNullable(imageUrl);
         this.ingredientText = normalizeNullable(ingredientText);
         this.claims = normalizeNullable(claims);
@@ -79,7 +75,6 @@ public class Product {
             String productName,
             ProductCategory category,
             UsageStep usageStep,
-            int price,
             String imageUrl,
             String ingredientText,
             String claims,
@@ -94,7 +89,6 @@ public class Product {
                 productName,
                 category,
                 usageStep,
-                price,
                 imageUrl,
                 ingredientText,
                 claims,
@@ -112,7 +106,6 @@ public class Product {
             String productName,
             ProductCategory category,
             UsageStep usageStep,
-            int price,
             String imageUrl,
             String ingredientText,
             String claims,
@@ -129,7 +122,6 @@ public class Product {
                 productName,
                 category,
                 usageStep,
-                price,
                 imageUrl,
                 ingredientText,
                 claims,
@@ -148,7 +140,6 @@ public class Product {
             String productName,
             ProductCategory category,
             UsageStep usageStep,
-            int price,
             String imageUrl,
             String ingredientText,
             String claims,
@@ -161,7 +152,6 @@ public class Product {
         validateProductName(productName);
         validateCategory(category);
         validateUsageStep(usageStep);
-        validatePrice(price);
         validateStatus(status);
 
         this.sourceUrl = sourceUrl.trim();
@@ -169,7 +159,6 @@ public class Product {
         this.productName = productName.trim();
         this.category = category;
         this.usageStep = usageStep;
-        this.price = price;
         this.imageUrl = normalizeNullable(imageUrl);
         this.ingredientText = normalizeNullable(ingredientText);
         this.claims = normalizeNullable(claims);
@@ -206,12 +195,6 @@ public class Product {
     private static void validateUsageStep(UsageStep usageStep) {
         if (usageStep == null) {
             throw new ProductException(ProductErrorCode.INVALID_USAGE_STEP);
-        }
-    }
-
-    private static void validatePrice(int price) {
-        if (price < 0) {
-            throw new ProductException(ProductErrorCode.INVALID_PRICE);
         }
     }
 

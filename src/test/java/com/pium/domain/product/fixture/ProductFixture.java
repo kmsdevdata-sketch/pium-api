@@ -19,7 +19,6 @@ public final class ProductFixture {
                 "장벽 진정 크림",
                 ProductCategory.LOTION_CREAM,
                 UsageStep.MOISTURIZE,
-                24000,
                 "https://image.example/product.png",
                 "정제수, 글리세린, 판테놀, 세라마이드엔피",
                 "장벽과 진정을 위한 크림",

@@ -61,7 +61,6 @@ class RecommendationProductProfileQueryAdapterTest {
                 product.getProductName(),
                 product.getCategory(),
                 product.getUsageStep(),
-                product.getPrice(),
                 product.getImageUrl(),
                 product.getIngredientText(),
                 product.getClaims(),

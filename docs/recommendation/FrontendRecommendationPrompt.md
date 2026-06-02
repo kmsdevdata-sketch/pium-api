@@ -67,7 +67,7 @@ Top 3:
 
 - `topRecommendations`를 세로 강조 카드로 보여준다.
 - 가로 캐러셀보다 세로 카드가 우선이다.
-- 카드에는 이미지, 브랜드, 상품명, 가격, scoreBandLabel, careTags, cautionPoints, recommendationReason을 보여준다.
+- 카드에는 이미지, 브랜드, 상품명, scoreBandLabel, careTags, cautionPoints, recommendationReason을 보여준다.
 
 카테고리:
 
@@ -160,7 +160,6 @@ rank
 productId
 brandName
 productName
-price
 imageUrl
 categoryLabel
 usageStepLabel
@@ -176,7 +175,6 @@ cautionPoints
 productId
 brandName
 productName
-price
 imageUrl
 sourceUrl
 categoryLabel

@@ -7,7 +7,6 @@ public record ProductRecommendationItemView(
         String productId,
         String brandName,
         String productName,
-        int price,
         String imageUrl,
         String category,
         String categoryLabel,

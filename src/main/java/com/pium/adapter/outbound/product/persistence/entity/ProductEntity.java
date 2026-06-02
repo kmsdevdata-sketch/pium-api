@@ -50,9 +50,6 @@ public class ProductEntity {
     @Column(name = "usage_step", nullable = false, length = 64)
     private UsageStep usageStep;
 
-    @Column(name = "price", nullable = false)
-    private int price;
-
     @Column(name = "image_url", length = 1024)
     private String imageUrl;
 
@@ -91,7 +88,6 @@ public class ProductEntity {
             String productName,
             ProductCategory category,
             UsageStep usageStep,
-            int price,
             String imageUrl,
             String ingredientText,
             String claims,
@@ -107,7 +103,6 @@ public class ProductEntity {
         this.productName = productName;
         this.category = category;
         this.usageStep = usageStep;
-        this.price = price;
         this.imageUrl = imageUrl;
         this.ingredientText = ingredientText;
         this.claims = claims;
@@ -126,7 +121,6 @@ public class ProductEntity {
                 product.getProductName(),
                 product.getCategory(),
                 product.getUsageStep(),
-                product.getPrice(),
                 product.getImageUrl(),
                 product.getIngredientText(),
                 product.getClaims(),
@@ -146,7 +140,6 @@ public class ProductEntity {
                 productName,
                 category,
                 usageStep,
-                price,
                 imageUrl,
                 ingredientText,
                 claims,

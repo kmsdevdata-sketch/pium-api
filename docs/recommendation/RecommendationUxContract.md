@@ -72,7 +72,6 @@ GET /api/v1/users/me/recommendations/{productId}
 productId
 brandName
 productName
-price
 imageUrl
 sourceUrl
 categoryLabel

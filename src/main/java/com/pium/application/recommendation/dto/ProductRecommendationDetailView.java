@@ -6,7 +6,6 @@ public record ProductRecommendationDetailView(
         String productId,
         String brandName,
         String productName,
-        int price,
         String imageUrl,
         String sourceUrl,
         String category,

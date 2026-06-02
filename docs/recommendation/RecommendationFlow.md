@@ -48,7 +48,7 @@
 ```text
 Admin
 -> Olive Young / Shopping Curator Link 입력
--> 상품명, 브랜드, 카테고리, 가격, 이미지 확인
+-> 상품명, 브랜드, 카테고리, 이미지 확인
 -> 전성분/상세 설명/기능성 표시 입력 또는 보정
 -> ProductRawData 저장
 -> AI-assisted ProductProfiler 실행

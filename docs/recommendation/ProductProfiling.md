@@ -57,7 +57,6 @@ ProductRawData 후보 필드:
 | productName | 상품명 |
 | category | 운영자가 선택한 상품 카테고리 |
 | usageStep | 클렌징, 보습, 선케어 등 사용 단계 |
-| price | 가격 정보 |
 | imageUrl | 어드민에서 등록하거나 원본에서 가져온 이미지 |
 | ingredientText | 전성분 원문 |
 | claims | 상세페이지/상품 설명 문구 |

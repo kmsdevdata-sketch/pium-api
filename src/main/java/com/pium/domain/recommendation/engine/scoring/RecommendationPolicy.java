@@ -35,6 +35,7 @@ public class RecommendationPolicy {
     private static final int PENALTY_RISK_SCORE = -25;
     private static final int CAUTION_RISK_SCORE = -8;
     private static final int CATEGORY_HINT_SCORE = 5;
+    private static final int MIN_RECOMMENDATION_SCORE = 20;
 
     /**
      * 상품 프로파일 후보 목록을 점수화하고 추천 가능한 후보만 반환
@@ -90,6 +91,10 @@ public class RecommendationPolicy {
         score += cautionRisks.size() * CAUTION_RISK_SCORE;
         score += categoryHintScore(spec, profile);
 
+        if (!isRecommendationCandidate(spec, matchedRequiredTraits, matchedPreferredTraits, matchedGoalTraits, score)) {
+            return Optional.empty();
+        }
+
         return Optional.of(new ScoredRecommendationCandidate(
                 profile.productId(),
                 Math.max(score, 0),
@@ -105,6 +110,24 @@ public class RecommendationPolicy {
     private boolean hasBlockedRisk(ProductSearchSpec spec, ProductProfile profile) {
         return profile.riskTraits().stream()
                 .anyMatch(signal -> spec.blockedRiskTraits().contains(signal.trait()));
+    }
+
+    private boolean isRecommendationCandidate(
+            ProductSearchSpec spec,
+            List<MatchedTrait> matchedRequiredTraits,
+            List<MatchedTrait> matchedPreferredTraits,
+            List<MatchedTrait> matchedGoalTraits,
+            int score
+    ) {
+        if (Math.max(score, 0) < MIN_RECOMMENDATION_SCORE) {
+            return false;
+        }
+
+        if (!spec.requiredTraits().isEmpty()) {
+            return !matchedRequiredTraits.isEmpty();
+        }
+
+        return !matchedPreferredTraits.isEmpty() || !matchedGoalTraits.isEmpty();
     }
 
     private List<MatchedTrait> matchedRequiredTraits(ProductSearchSpec spec, ProductProfile profile) {

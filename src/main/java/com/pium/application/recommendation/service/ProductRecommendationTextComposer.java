@@ -15,6 +15,7 @@ import com.pium.domain.recommendation.model.scoring.AppliedRisk;
 import com.pium.domain.recommendation.model.scoring.MatchedTrait;
 import com.pium.domain.recommendation.model.scoring.ScoredRecommendationCandidate;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -25,14 +26,14 @@ public class ProductRecommendationTextComposer {
     public static final String AD_DISCLOSURE =
             "이 포스팅은 올리브영 쇼핑 큐레이터 활동의 일환으로, 구매 시 일정 금액의 수수료를 제공받습니다.";
 
-    ProductRecommendationListView.RecommendationSummaryView summary(SkinInterpretation interpretation) {
+    ProductRecommendationListView.RecommendationSummaryView summary(
+            SkinInterpretation interpretation,
+            boolean recommendationEmpty
+    ) {
         return new ProductRecommendationListView.RecommendationSummaryView(
                 headline(interpretation.routineIntent()),
                 summaryReasons(interpretation),
-                List.of(
-                        "추천은 화장품 선택 참고용이며 의학적 진단이 아니에요.",
-                        "피부 반응은 개인마다 다를 수 있어 새 제품은 적은 양으로 먼저 사용해보세요."
-                )
+                summaryNotices(recommendationEmpty)
         );
     }
 
@@ -194,6 +195,16 @@ public class ProductRecommendationTextComposer {
             return reasons;
         }
         return List.of("최근 진단 결과에서 강하게 치우친 신호가 적어 기본 관리 방향으로 정리했어요.");
+    }
+
+    private List<String> summaryNotices(boolean recommendationEmpty) {
+        List<String> notices = new ArrayList<>();
+        if (recommendationEmpty) {
+            notices.add("현재 등록된 상품 중 이번 진단 조건에 충분히 맞는 후보가 부족해요.");
+        }
+        notices.add("추천은 화장품 선택 참고용이며 의학적 진단이 아니에요.");
+        notices.add("피부 반응은 개인마다 다를 수 있어 새 제품은 적은 양으로 먼저 사용해보세요.");
+        return notices;
     }
 
     private Optional<RecommendationTrait> primaryMatchedTrait(ScoredRecommendationCandidate candidate) {

@@ -2,6 +2,7 @@ package com.pium.application.recommendation.service;
 
 import com.pium.application.product.required.LoadProductPort;
 import com.pium.application.recommendation.dto.ProductRecommendationDetailView;
+import com.pium.application.recommendation.dto.ProductRecommendationItemView;
 import com.pium.application.recommendation.dto.ProductRecommendationListView;
 import com.pium.application.recommendation.exception.RecommendationApplicationException;
 import com.pium.application.recommendation.required.LoadRecommendationProductProfilePort;
@@ -85,6 +86,60 @@ class GetProductRecommendationServiceTest {
         assertThat(response.topRecommendations()).isEmpty();
         assertThat(response.recommendations()).isEmpty();
         assertThat(response.filters().selectedCategory()).isEqualTo("SUN_CARE");
+    }
+
+    @Test
+    void getLatest_LOW_후보는_상단추천이_아닌_일반추천으로_반환한다() {
+        UserId userId = UserId.of("user-1");
+        Product mediumProduct = ProductFixture.createProduct();
+        Product lowProduct = ProductFixture.createProduct();
+        ProductProfile mediumProfile = hydrationProfile(mediumProduct);
+        ProductProfile lowProfile = dryingHydrationProfile(lowProduct);
+
+        when(loadSkinAnalysisResultPort.loadLatest(userId)).thenReturn(Optional.of(skinAnalysisResult(userId)));
+        when(loadRecommendationProductProfilePort.loadCandidates(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(List.of(lowProfile, mediumProfile));
+        when(loadProductPort.findById(mediumProduct.getId())).thenReturn(Optional.of(mediumProduct));
+        when(loadProductPort.findById(lowProduct.getId())).thenReturn(Optional.of(lowProduct));
+
+        ProductRecommendationListView response = service.getLatest(userId, "ALL");
+
+        assertThat(response.topRecommendations())
+                .extracting(ProductRecommendationItemView::productId)
+                .containsExactly(mediumProduct.getId().value());
+        assertThat(response.recommendations())
+                .extracting(ProductRecommendationItemView::productId)
+                .containsExactly(lowProduct.getId().value());
+        assertThat(response.recommendations().get(0).scoreBand()).isEqualTo("LOW");
+    }
+
+    @Test
+    void getLatest_상단추천_한도를_넘은_MEDIUM_후보는_일반추천으로_반환한다() {
+        UserId userId = UserId.of("user-1");
+        Product product1 = ProductFixture.createProduct();
+        Product product2 = ProductFixture.createProduct();
+        Product product3 = ProductFixture.createProduct();
+        Product product4 = ProductFixture.createProduct();
+
+        when(loadSkinAnalysisResultPort.loadLatest(userId)).thenReturn(Optional.of(skinAnalysisResult(userId)));
+        when(loadRecommendationProductProfilePort.loadCandidates(org.mockito.ArgumentMatchers.any()))
+                .thenReturn(List.of(
+                        hydrationProfile(product1),
+                        hydrationProfile(product2),
+                        hydrationProfile(product3),
+                        hydrationProfile(product4)
+                ));
+        when(loadProductPort.findById(product1.getId())).thenReturn(Optional.of(product1));
+        when(loadProductPort.findById(product2.getId())).thenReturn(Optional.of(product2));
+        when(loadProductPort.findById(product3.getId())).thenReturn(Optional.of(product3));
+        when(loadProductPort.findById(product4.getId())).thenReturn(Optional.of(product4));
+
+        ProductRecommendationListView response = service.getLatest(userId, "ALL");
+
+        assertThat(response.topRecommendations()).hasSize(3);
+        assertThat(response.recommendations())
+                .extracting(ProductRecommendationItemView::productId)
+                .containsExactly(product4.getId().value());
     }
 
     /**
@@ -202,6 +257,49 @@ class GetProductRecommendationServiceTest {
                                 EvidenceType.INGREDIENT_PRESENT,
                                 EvidenceSourceField.INGREDIENTS,
                                 "향 성분이 확인돼요.",
+                                EvidenceConfidence.MEDIUM
+                        )
+                ),
+                List.of()
+        );
+    }
+
+    private ProductProfile dryingHydrationProfile(Product product) {
+        ProductTraitSignal<RecommendationTrait> benefitTrait = ProductTraitSignal.of(
+                RecommendationTrait.HYDRATION_SUPPORT,
+                TraitStrength.WEAK,
+                EvidenceConfidence.MEDIUM,
+                List.of("ev_1")
+        );
+        ProductTraitSignal<ProductRiskTrait> riskTrait = ProductTraitSignal.of(
+                ProductRiskTrait.DRYING_OR_STRIPPING_RISK,
+                TraitStrength.WEAK,
+                EvidenceConfidence.MEDIUM,
+                List.of("ev_2")
+        );
+
+        ProductProfile baseProfile = ProductProfileFixture.createProductProfile(product.getId());
+        return ProductProfile.of(
+                product.getId(),
+                product.getCategory(),
+                product.getUsageStep(),
+                List.of(benefitTrait),
+                List.of(riskTrait),
+                baseProfile.ingredientGroups(),
+                baseProfile.activeFamilies(),
+                List.of(
+                        EvidenceSignal.of(
+                                "ev_1",
+                                EvidenceType.INGREDIENT_GROUP,
+                                EvidenceSourceField.INGREDIENTS,
+                                "전성분에서 보습 성분군이 확인돼요.",
+                                EvidenceConfidence.MEDIUM
+                        ),
+                        EvidenceSignal.of(
+                                "ev_2",
+                                EvidenceType.INGREDIENT_PRESENT,
+                                EvidenceSourceField.INGREDIENTS,
+                                "건조감을 줄 수 있는 신호가 확인돼요.",
                                 EvidenceConfidence.MEDIUM
                         )
                 ),

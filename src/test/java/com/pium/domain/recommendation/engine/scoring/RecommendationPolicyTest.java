@@ -101,6 +101,85 @@ class RecommendationPolicyTest {
     }
 
     @Test
+    void score_requiredTrait가_있으면_required_매칭이_없는_상품은_후보에서_제외한다() {
+        ProductProfile profile = productProfile(
+                ProductId.of("product-1"),
+                ProductCategory.ESSENCE_SERUM,
+                List.of(benefit(RecommendationTrait.BARRIER_SUPPORT, TraitStrength.MODERATE)),
+                List.of()
+        );
+
+        ProductSearchSpec spec = new ProductSearchSpec(
+                List.of(new TraitRequirement(RecommendationTrait.HYDRATION_SUPPORT, TraitStrength.WEAK)),
+                List.of(new TraitPreference(RecommendationTrait.BARRIER_SUPPORT, TraitPreference.Weight.MEDIUM)),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(ProductCategory.ESSENCE_SERUM),
+                ProductSearchSpec.FallbackPolicy.RELAX_REQUIRED_TO_PREFERRED_KEEP_BLOCKED
+        );
+
+        Optional<ScoredRecommendationCandidate> result = policy.score(spec, profile);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void score_categoryHint만_맞는_상품은_후보에서_제외한다() {
+        ProductProfile profile = productProfile(
+                ProductId.of("product-1"),
+                ProductCategory.ESSENCE_SERUM,
+                List.of(benefit(RecommendationTrait.HYDRATION_SUPPORT, TraitStrength.MODERATE)),
+                List.of()
+        );
+
+        ProductSearchSpec spec = new ProductSearchSpec(
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(ProductCategory.ESSENCE_SERUM),
+                ProductSearchSpec.FallbackPolicy.RELAX_PREFERRED_KEEP_BLOCKED
+        );
+
+        Optional<ScoredRecommendationCandidate> result = policy.score(spec, profile);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void score_최소_추천점수보다_낮으면_후보에서_제외한다() {
+        ProductProfile profile = productProfile(
+                ProductId.of("product-1"),
+                ProductCategory.ETC,
+                List.of(benefit(RecommendationTrait.BRIGHTENING_SUPPORT, TraitStrength.MODERATE)),
+                List.of()
+        );
+
+        ProductSearchSpec spec = new ProductSearchSpec(
+                List.of(),
+                List.of(),
+                List.of(new GoalTraitBoost(
+                        "Q11_3",
+                        RecommendationTrait.BRIGHTENING_SUPPORT,
+                        TraitPreference.Weight.MEDIUM
+                )),
+                List.of(),
+                List.of(),
+                List.of(),
+                List.of(ProductCategory.ESSENCE_SERUM),
+                ProductSearchSpec.FallbackPolicy.RELAX_PREFERRED_KEEP_BLOCKED
+        );
+
+        Optional<ScoredRecommendationCandidate> result = policy.score(spec, profile);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
     void score_후보목록은_점수_내림차순으로_정렬한다() {
         ProductProfile highScoreProfile = productProfile(
                 ProductId.of("product-high"),
@@ -114,7 +193,7 @@ class RecommendationPolicyTest {
         ProductProfile lowScoreProfile = productProfile(
                 ProductId.of("product-low"),
                 ProductCategory.ETC,
-                List.of(benefit(RecommendationTrait.BARRIER_SUPPORT, TraitStrength.WEAK)),
+                List.of(benefit(RecommendationTrait.HYDRATION_SUPPORT, TraitStrength.WEAK)),
                 List.of()
         );
 

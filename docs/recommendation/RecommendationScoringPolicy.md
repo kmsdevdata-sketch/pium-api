@@ -30,6 +30,7 @@ Safety는 점수보다 우선한다.
 | PENALTY_RISK_SCORE | -25 | 후보에는 남기지만 상위 노출을 제한해야 하는 risk가 있을 때 |
 | CAUTION_RISK_SCORE | -8 | 추천은 가능하지만 주의가 필요한 risk가 있을 때 |
 | CATEGORY_HINT_SCORE | +5 | 현재 추천 방향과 상품 카테고리가 맞을 때 |
+| MIN_RECOMMENDATION_SCORE | 20 | 추천 후보로 노출하기 위한 최소 적합 점수 |
 
 초기값의 의도:
 
@@ -38,8 +39,24 @@ Safety는 점수보다 우선한다.
 - Soft penalty 1개는 preferred 1개보다 강하게 작동한다.
 - Caution은 상품을 크게 밀어내지 않고 설명/약한 감점 역할을 한다.
 - Category hint는 동점 또는 근소한 점수 차이를 정리하는 보조 신호다.
+- Category hint만 맞거나 점수가 20점 미만인 상품은 추천 후보로 노출하지 않는다.
 
-## 3. Score Band
+## 3. Candidate Eligibility
+
+점수 계산 전에 `blockedRiskTraits`에 걸린 상품은 후보에서 제외한다.
+이후 계산된 후보도 다음 기준을 통과해야 추천 응답에 노출한다.
+
+| 조건 | 처리 |
+| --- | --- |
+| requiredTraits가 있음 | required trait를 최소 1개 이상 매칭해야 함 |
+| requiredTraits가 없음 | preferred 또는 goal trait를 최소 1개 이상 매칭해야 함 |
+| categoryHint만 매칭 | 추천 후보에서 제외 |
+| score < 20 | 추천 후보에서 제외 |
+
+현재 MVP에서는 후보가 부족해도 fallback으로 조건을 자동 완화하지 않는다.
+조건에 충분히 맞는 상품이 없으면 빈 추천 결과와 안내 문구를 반환한다.
+
+## 4. Score Band
 
 | Band | 기준 | 의미 |
 | --- | ---: | --- |
@@ -48,8 +65,9 @@ Safety는 점수보다 우선한다.
 | LOW | 40 미만 | 추천 가능하지만 적합 신호가 약한 후보 |
 
 `score`는 0 미만으로 내려가지 않게 보정한다.
+상단 추천 영역에는 `MEDIUM` 이상 후보만 노출하고, `LOW` 후보는 일반 추천 영역에서만 노출한다.
 
-## 4. Expected Effects
+## 5. Expected Effects
 
 ### REQUIRED_TRAIT_SCORE
 
@@ -123,19 +141,19 @@ Safety는 점수보다 우선한다.
 - category는 거의 tie-breaker로만 작동한다.
 - 추천 결과가 사용 맥락과 덜 맞아 보일 수 있다.
 
-## 5. Operation Scenarios
+## 6. Operation Scenarios
 
 | 현상 | 우선 확인 | 조정 후보 |
 | --- | --- | --- |
 | 추천 상품이 너무 많이 비슷함 | required trait가 과하게 강한지 확인 | REQUIRED_TRAIT_SCORE 하향, PREFERRED_TRAIT_SCORE 상향 |
-| 추천 상품이 너무 적거나 비어 보임 | hard block이 과한지, required가 너무 많은지 확인 | ProductSearchSpec fallback, blocked risk 정책, REQUIRED_TRAIT_SCORE |
+| 추천 상품이 너무 적거나 비어 보임 | hard block이 과한지, required/min score가 너무 강한지 확인 | blocked risk 정책, MIN_RECOMMENDATION_SCORE, REQUIRED_TRAIT_SCORE |
 | 관련 없는 상품이 상위에 나옴 | category/goal이 need를 뒤집는지 확인 | GOAL_MEDIUM_SCORE 하향, CATEGORY_HINT_SCORE 하향, REQUIRED_TRAIT_SCORE 상향 |
 | 사용자의 goal이 결과에 잘 안 보임 | goal trait 매칭률과 boost 점수 확인 | GOAL_MEDIUM_SCORE 상향, GOAL_LOW_SCORE 상향 |
 | 민감/장벽 사용자에게 자극 가능 상품이 높게 나옴 | penalty/caution 적용 여부 확인 | PENALTY_RISK_SCORE 더 음수로 조정, CAUTION_RISK_SCORE 더 음수로 조정 |
 | 안전하지만 너무 평범한 상품만 나옴 | risk penalty가 과한지 확인 | PENALTY_RISK_SCORE 0에 가깝게 조정, PREFERRED_TRAIT_SCORE 상향 |
 | 특정 카테고리만 반복됨 | category hint 영향 확인 | CATEGORY_HINT_SCORE 하향, category diversity 정책 추가 |
 
-## 6. Adjustment Rule
+## 7. Adjustment Rule
 
 운영 중에는 한 번에 여러 상수를 바꾸지 않는다.
 

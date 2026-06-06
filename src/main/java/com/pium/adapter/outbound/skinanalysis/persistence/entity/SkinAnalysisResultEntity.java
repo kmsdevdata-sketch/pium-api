@@ -1,6 +1,7 @@
 package com.pium.adapter.outbound.skinanalysis.persistence.entity;
 
 import com.pium.adapter.outbound.skinanalysis.persistence.mapper.PersistenceBundle;
+import com.pium.domain.skinanalysis.enumtype.SkinAnalysisType;
 import com.pium.domain.skinanalysis.model.SkinAnalysisResult;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -30,6 +31,10 @@ public class SkinAnalysisResultEntity {
     @Column(name = "user_id", nullable = false, length = 64)
     private String userId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "analysis_type", nullable = false, length = 32)
+    private SkinAnalysisType analysisType;
+
     // goals는 값 컬렉션으로 별도 테이블에 저장
     @ElementCollection(fetch = FetchType.LAZY)
     @CollectionTable(
@@ -48,12 +53,14 @@ public class SkinAnalysisResultEntity {
     private SkinAnalysisResultEntity(
             String resultId,
             String userId,
+            SkinAnalysisType analysisType,
             List<String> goals,
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
         this.resultId = resultId;
         this.userId = userId;
+        this.analysisType = analysisType;
         this.goals = List.copyOf(goals);
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -63,6 +70,7 @@ public class SkinAnalysisResultEntity {
         SkinAnalysisResultEntity entity = new SkinAnalysisResultEntity(
                 domain.getId().value(),
                 domain.getUserId().value(),
+                domain.getAnalysisType(),
                 domain.getGoals(),
                 domain.getCreatedAt(),
                 domain.getUpdatedAt()

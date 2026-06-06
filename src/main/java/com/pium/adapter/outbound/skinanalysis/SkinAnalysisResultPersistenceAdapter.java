@@ -84,6 +84,7 @@ public class SkinAnalysisResultPersistenceAdapter implements SaveSkinAnalysisRes
                 UserId.of(entity.getUserId()),
                 scores,
                 entity.getGoals(),
+                entity.getAnalysisType(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt()
         );

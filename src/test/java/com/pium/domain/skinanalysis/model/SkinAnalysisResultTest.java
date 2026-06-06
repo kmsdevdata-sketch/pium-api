@@ -1,6 +1,6 @@
 package com.pium.domain.skinanalysis.model;
 
-import com.pium.domain.skinanalysis.enumtype.IngredientGroup;
+import com.pium.domain.skinanalysis.enumtype.SkinAnalysisType;
 import com.pium.domain.skinanalysis.enumtype.SkinMetric;
 import com.pium.domain.skinanalysis.exception.SkinAnalysisException;
 import com.pium.domain.skinanalysis.fixture.SkinAnalysisResultFixture;
@@ -40,8 +40,21 @@ class SkinAnalysisResultTest {
 
         assertThat(result.getId()).isNotNull();
         assertThat(result.getUserId()).isEqualTo(userId);
+        assertThat(result.getAnalysisType()).isEqualTo(SkinAnalysisType.SURVEY);
         assertThat(result.getSkinMetricScores()).isEqualTo(skinMetricScores);
         assertThat(result.getCreatedAt()).isEqualTo(result.getUpdatedAt());
+    }
+
+    @Test
+    void 사진분석결과는_IMAGE_타입으로_생성된다() {
+        SkinAnalysisResult result = SkinAnalysisResult.create(
+                userId,
+                skinMetricScores,
+                goals,
+                SkinAnalysisType.IMAGE
+        );
+
+        assertThat(result.getAnalysisType()).isEqualTo(SkinAnalysisType.IMAGE);
     }
 
     @Test
@@ -61,6 +74,7 @@ class SkinAnalysisResultTest {
 
         assertThat(reconstituted.getId()).isEqualTo(id);
         assertThat(reconstituted.getUserId()).isEqualTo(userId);
+        assertThat(reconstituted.getAnalysisType()).isEqualTo(SkinAnalysisType.SURVEY);
         assertThat(reconstituted.getSkinMetricScores()).isEqualTo(skinMetricScores);
         assertThat(reconstituted.getCreatedAt()).isEqualTo(createdAt);
         assertThat(reconstituted.getUpdatedAt()).isEqualTo(updatedAt);
@@ -72,6 +86,16 @@ class SkinAnalysisResultTest {
                 userId,
                 List.of(),
                 goals
+        )).isInstanceOf(SkinAnalysisException.class);
+    }
+
+    @Test
+    void 분석유형_null이면_예외_검증() {
+        assertThatThrownBy(() -> SkinAnalysisResult.create(
+                userId,
+                skinMetricScores,
+                goals,
+                null
         )).isInstanceOf(SkinAnalysisException.class);
     }
 

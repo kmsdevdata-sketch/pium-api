@@ -32,3 +32,7 @@ openai:
     api-key: test-openai-api-key
     responses-uri: https://api.openai.test/v1/responses
     model: gpt-5.5
+  skin-image-analysis:
+    api-key: test-openai-api-key
+    responses-uri: https://api.openai.test/v1/responses
+    model: gpt-5-nano

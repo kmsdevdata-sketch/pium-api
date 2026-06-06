@@ -36,9 +36,10 @@ class AnalyzeSkinImageServiceTest {
     }
 
     @Test
-    void analyze_사진분석결과를_IMAGE_타입으로_저장한다() {
+    void analyze_사진분석결과를_IMAGE_타입으로_저장한다() throws InterruptedException {
         UserId userId = UserId.of("user-test-001");
         String sessionId = imageAnalysisSessionStore.start(userId, () -> imageAnalysis(true));
+        waitUntilDone(sessionId);
         AnalyzeImageCommand command = command(userId, sessionId);
 
         AnalyzeImageResultView view = service.analyze(command);
@@ -55,9 +56,10 @@ class AnalyzeSkinImageServiceTest {
     }
 
     @Test
-    void analyze_분석불가_사진이면_저장하지_않고_예외가_발생한다() {
+    void analyze_분석불가_사진이면_저장하지_않고_예외가_발생한다() throws InterruptedException {
         UserId userId = UserId.of("user-test-001");
         String sessionId = imageAnalysisSessionStore.start(userId, () -> imageAnalysis(false));
+        waitUntilDone(sessionId);
         AnalyzeImageCommand command = command(userId, sessionId);
 
         assertThatThrownBy(() -> service.analyze(command))
@@ -143,5 +145,6 @@ class AnalyzeSkinImageServiceTest {
             }
             Thread.sleep(10);
         }
+        assertThat(imageAnalysisSessionStore.find(sessionId).orElseThrow().isDone()).isTrue();
     }
 }

@@ -1,5 +1,6 @@
 package com.pium.domain.skinanalysis.model;
 
+import com.pium.domain.skinanalysis.enumtype.SkinAnalysisType;
 import com.pium.domain.skinanalysis.exception.SkinAnalysisErrorCode;
 import com.pium.domain.skinanalysis.exception.SkinAnalysisException;
 import com.pium.domain.skinanalysis.vo.SkinAnalysisResultId;
@@ -19,21 +20,25 @@ public class SkinAnalysisResult {
     private final LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private final SkinAnalysisType analysisType;
     private final List<SkinMetricScore> skinMetricScores;
     private final List<String> goals;
 
     private SkinAnalysisResult(
             SkinAnalysisResultId id,
             UserId userId,
+            SkinAnalysisType analysisType,
             List<SkinMetricScore> skinMetricScores,
             List<String> goals,
             LocalDateTime createdAt
     ) {
         validateScores(skinMetricScores);
         validateGoals(goals);
+        validateAnalysisType(analysisType);
 
         this.id = id;
         this.userId = userId;
+        this.analysisType = analysisType;
         this.skinMetricScores = List.copyOf(skinMetricScores);
         this.goals = List.copyOf(goals);
         this.createdAt = createdAt;
@@ -45,10 +50,20 @@ public class SkinAnalysisResult {
             List<SkinMetricScore> skinMetricScores,
             List<String> goals
     ) {
+        return create(userId, skinMetricScores, goals, SkinAnalysisType.SURVEY);
+    }
+
+    public static SkinAnalysisResult create(
+            UserId userId,
+            List<SkinMetricScore> skinMetricScores,
+            List<String> goals,
+            SkinAnalysisType analysisType
+    ) {
         LocalDateTime now = LocalDateTime.now();
         return new SkinAnalysisResult(
                 SkinAnalysisResultId.newId(),
                 userId,
+                analysisType,
                 skinMetricScores,
                 goals,
                 now
@@ -63,9 +78,22 @@ public class SkinAnalysisResult {
             LocalDateTime createdAt,
             LocalDateTime updatedAt
     ) {
+        return reconstitute(id, userId, skinMetricScores, goals, SkinAnalysisType.SURVEY, createdAt, updatedAt);
+    }
+
+    public static SkinAnalysisResult reconstitute(
+            SkinAnalysisResultId id,
+            UserId userId,
+            List<SkinMetricScore> skinMetricScores,
+            List<String> goals,
+            SkinAnalysisType analysisType,
+            LocalDateTime createdAt,
+            LocalDateTime updatedAt
+    ) {
         SkinAnalysisResult result = new SkinAnalysisResult(
                 id,
                 userId,
+                analysisType,
                 skinMetricScores,
                 goals,
                 createdAt
@@ -83,6 +111,12 @@ public class SkinAnalysisResult {
     private static void validateGoals(List<String> goals) {
         if (goals == null || goals.isEmpty()) {
             throw new SkinAnalysisException(SkinAnalysisErrorCode.SKIN_GOALS_REQUIRED);
+        }
+    }
+
+    private static void validateAnalysisType(SkinAnalysisType analysisType) {
+        if (analysisType == null) {
+            throw new SkinAnalysisException(SkinAnalysisErrorCode.INVALID_SKIN_ANALYSIS_TYPE);
         }
     }
 

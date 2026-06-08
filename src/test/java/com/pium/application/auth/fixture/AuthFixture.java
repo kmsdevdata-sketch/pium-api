@@ -2,8 +2,11 @@ package com.pium.application.auth.fixture;
 
 import com.pium.adapter.inbound.web.auth.AuthenticatedUser;
 import com.pium.application.auth.dto.LoginCommand;
+import com.pium.application.auth.dto.OauthClientType;
 import com.pium.application.auth.required.dto.GoogleAccessToken;
 import com.pium.application.auth.required.dto.GoogleAuthenticatedUser;
+import com.pium.application.auth.required.dto.KakaoAccessToken;
+import com.pium.application.auth.required.dto.KakaoAuthenticatedUser;
 import com.pium.application.auth.required.dto.TossAccessToken;
 import com.pium.application.auth.required.dto.TossAuthenticatedUser;
 import com.pium.domain.user.enumtype.OauthProvider;
@@ -19,7 +22,8 @@ public final class AuthFixture {
         return new LoginCommand(
                 OauthProvider.TOSS,
                 "auth-code-001",
-                "DEFAULT"
+                "DEFAULT",
+                OauthClientType.ADMIN
         );
     }
 
@@ -27,7 +31,26 @@ public final class AuthFixture {
         return new LoginCommand(
                 OauthProvider.GOOGLE,
                 "google-auth-code-001",
-                null
+                null,
+                OauthClientType.ADMIN
+        );
+    }
+
+    public static LoginCommand createWebGoogleLoginCommand() {
+        return new LoginCommand(
+                OauthProvider.GOOGLE,
+                "google-web-auth-code-001",
+                null,
+                OauthClientType.WEB
+        );
+    }
+
+    public static LoginCommand createKakaoLoginCommand() {
+        return new LoginCommand(
+                OauthProvider.KAKAO,
+                "kakao-auth-code-001",
+                null,
+                OauthClientType.WEB
         );
     }
 
@@ -56,6 +79,20 @@ public final class AuthFixture {
 
     public static GoogleAuthenticatedUser createGoogleAuthenticatedUser() {
         return new GoogleAuthenticatedUser("google-sub-001", "구글사용자");
+    }
+
+    public static KakaoAccessToken createKakaoAccessToken() {
+        return new KakaoAccessToken(
+                "kakao-access-token",
+                null,
+                "bearer",
+                3600L,
+                "account.profile"
+        );
+    }
+
+    public static KakaoAuthenticatedUser createKakaoAuthenticatedUser() {
+        return new KakaoAuthenticatedUser("123456789", "카카오사용자");
     }
 
     public static TossAuthenticatedUser createUnnamedTossAuthenticatedUser() {

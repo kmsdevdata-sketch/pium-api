@@ -5,6 +5,7 @@ import com.pium.domain.user.enumtype.OauthProvider;
 public record LoginCommand(
         OauthProvider provider,
         String authorizationCode,
-        String referrer
+        String referrer,
+        OauthClientType clientType
 ) {
 }

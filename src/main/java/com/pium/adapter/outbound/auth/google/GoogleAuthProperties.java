@@ -10,6 +10,7 @@ public record GoogleAuthProperties(
         String clientId,
         String clientSecret,
         String redirectUri,
+        String webRedirectUri,
         String tokenUri,
         String userInfoUri
 ) {

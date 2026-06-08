@@ -2,6 +2,7 @@ package com.pium.adapter.outbound.auth.google;
 
 import com.pium.adapter.outbound.auth.exception.AuthAdapterErrorCode;
 import com.pium.adapter.outbound.auth.exception.AuthAdapterException;
+import com.pium.application.auth.dto.OauthClientType;
 import com.pium.application.auth.required.ExchangeGoogleTokenPort;
 import com.pium.application.auth.required.dto.GoogleAccessToken;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +25,7 @@ public class GoogleTokenExchangeAdapter implements ExchangeGoogleTokenPort {
     private final GoogleAuthProperties googleAuthProperties;
 
     @Override
-    public GoogleAccessToken exchange(String authorizationCode) {
+    public GoogleAccessToken exchange(String authorizationCode, OauthClientType clientType) {
         GoogleTokenResponse response;
 
         try {
@@ -32,7 +33,7 @@ public class GoogleTokenExchangeAdapter implements ExchangeGoogleTokenPort {
                     .post()
                     .uri(googleAuthProperties.tokenUri())
                     .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                    .body(tokenRequestBody(authorizationCode))
+                    .body(tokenRequestBody(authorizationCode, clientType))
                     .retrieve()
                     .body(GoogleTokenResponse.class);
         } catch (RestClientResponseException e) {
@@ -57,13 +58,20 @@ public class GoogleTokenExchangeAdapter implements ExchangeGoogleTokenPort {
         );
     }
 
-    private MultiValueMap<String, String> tokenRequestBody(String authorizationCode) {
+    private MultiValueMap<String, String> tokenRequestBody(String authorizationCode, OauthClientType clientType) {
         MultiValueMap<String, String> body = new LinkedMultiValueMap<>();
         body.add("code", authorizationCode);
         body.add("client_id", googleAuthProperties.clientId());
         body.add("client_secret", googleAuthProperties.clientSecret());
-        body.add("redirect_uri", googleAuthProperties.redirectUri());
+        body.add("redirect_uri", redirectUri(clientType));
         body.add("grant_type", AUTHORIZATION_CODE);
         return body;
+    }
+
+    private String redirectUri(OauthClientType clientType) {
+        if (clientType == OauthClientType.WEB) {
+            return googleAuthProperties.webRedirectUri();
+        }
+        return googleAuthProperties.redirectUri();
     }
 }

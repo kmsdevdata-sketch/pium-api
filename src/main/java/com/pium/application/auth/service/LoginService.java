@@ -5,9 +5,11 @@ import com.pium.application.auth.dto.ExternalAuthenticatedUser;
 import com.pium.application.auth.dto.LoginCommand;
 import com.pium.application.auth.provider.Login;
 import com.pium.application.auth.required.ExchangeGoogleTokenPort;
+import com.pium.application.auth.required.ExchangeKakaoTokenPort;
 import com.pium.application.auth.required.ExchangeTossTokenPort;
 import com.pium.application.auth.required.IssueAccessTokenPort;
 import com.pium.application.auth.required.LoadGoogleUserPort;
+import com.pium.application.auth.required.LoadKakaoUserPort;
 import com.pium.application.auth.required.LoadTossUserPort;
 import com.pium.application.auth.required.LoadUserOauthPort;
 import com.pium.application.auth.required.SaveUserOauthPort;
@@ -15,6 +17,8 @@ import com.pium.application.auth.required.SaveUserPort;
 import com.pium.application.auth.required.SaveUserProfilePort;
 import com.pium.application.auth.required.dto.GoogleAccessToken;
 import com.pium.application.auth.required.dto.GoogleAuthenticatedUser;
+import com.pium.application.auth.required.dto.KakaoAccessToken;
+import com.pium.application.auth.required.dto.KakaoAuthenticatedUser;
 import com.pium.application.auth.required.dto.TossAccessToken;
 import com.pium.application.auth.required.dto.TossAuthenticatedUser;
 import com.pium.domain.user.enumtype.OauthProvider;
@@ -37,6 +41,8 @@ public class LoginService implements Login {
     private final LoadTossUserPort loadTossUserPort;
     private final ExchangeGoogleTokenPort exchangeGoogleTokenPort;
     private final LoadGoogleUserPort loadGoogleUserPort;
+    private final ExchangeKakaoTokenPort exchangeKakaoTokenPort;
+    private final LoadKakaoUserPort loadKakaoUserPort;
     private final LoadUserOauthPort loadUserOauthPort;
     private final SaveUserPort saveUserPort;
     private final SaveUserOauthPort saveUserOauthPort;
@@ -56,12 +62,12 @@ public class LoginService implements Login {
         return switch (command.provider()) {
             case TOSS -> authenticateWithToss(command);
             case GOOGLE -> authenticateWithGoogle(command);
-            case KAKAO -> throw new UnsupportedOperationException("KAKAO not implemented");
+            case KAKAO -> authenticateWithKakao(command);
         };
     }
 
     private ExternalAuthenticatedUser authenticateWithGoogle(LoginCommand command) {
-        GoogleAccessToken token = exchangeGoogleTokenPort.exchange(command.authorizationCode());
+        GoogleAccessToken token = exchangeGoogleTokenPort.exchange(command.authorizationCode(), command.clientType());
 
         GoogleAuthenticatedUser googleUser = loadGoogleUserPort.load(token.accessToken());
 
@@ -69,6 +75,18 @@ public class LoginService implements Login {
                 OauthProvider.GOOGLE,
                 ProviderUserId.of(googleUser.userKey()),
                 googleUser.name()
+        );
+    }
+
+    private ExternalAuthenticatedUser authenticateWithKakao(LoginCommand command) {
+        KakaoAccessToken token = exchangeKakaoTokenPort.exchange(command.authorizationCode());
+
+        KakaoAuthenticatedUser kakaoUser = loadKakaoUserPort.load(token.accessToken());
+
+        return new ExternalAuthenticatedUser(
+                OauthProvider.KAKAO,
+                ProviderUserId.of(kakaoUser.userKey()),
+                kakaoUser.name()
         );
     }
 

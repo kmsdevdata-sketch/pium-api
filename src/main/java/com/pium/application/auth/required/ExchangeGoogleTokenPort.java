@@ -1,5 +1,6 @@
 package com.pium.application.auth.required;
 
+import com.pium.application.auth.dto.OauthClientType;
 import com.pium.application.auth.required.dto.GoogleAccessToken;
 
 /**
@@ -8,5 +9,5 @@ import com.pium.application.auth.required.dto.GoogleAccessToken;
  */
 public interface ExchangeGoogleTokenPort {
 
-    GoogleAccessToken exchange(String authorizationCode);
+    GoogleAccessToken exchange(String authorizationCode, OauthClientType clientType);
 }

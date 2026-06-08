@@ -7,12 +7,14 @@
   - 예시 
     - Toss: `authorizationCode` , `referrer`
     - Google/Kakao 등 : authorizationCode 중심
+    - Google: admin/web 콜백 구분을 위해 `clientType` 전달
   - 요청 DTO 대략
     - 공통 필드 
       - `provider`
       - `authorizationCode`
     - 선택 필드 
       - `referrer`
+      - `clientType` (`ADMIN` 또는 `WEB`, 미전달 시 `ADMIN`)
 ### TOSS 전용 규칙 
 Toss handler 규칙
 1. authorizationCode + referrer 로 Toss token교환 
@@ -25,6 +27,7 @@ Toss handler 규칙
 백엔드는 `provider` 를 보고 로그인 전략을 선택 
 - Toss -> TossLoginHandler
 - Google -> GoogleLoginHandler
+- Kakao -> KakaoLoginHandler
 -> 공통흐름은 하나고 , 외부 인증 차이만 provider별로 처리 
 ---
 ## 외부 인증 결과 규칙 
@@ -73,4 +76,3 @@ MVP 에서는 별도 회원가입 페이지 x
 - JWT필터는 우리 JWT만 검증 
 - 필터는 provider 몰라도 됨 
 ---
-

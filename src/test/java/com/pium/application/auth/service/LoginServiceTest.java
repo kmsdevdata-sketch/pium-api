@@ -4,9 +4,11 @@ import com.pium.application.auth.dto.AuthTokenView;
 import com.pium.application.auth.dto.LoginCommand;
 import com.pium.application.auth.fixture.AuthFixture;
 import com.pium.application.auth.required.ExchangeGoogleTokenPort;
+import com.pium.application.auth.required.ExchangeKakaoTokenPort;
 import com.pium.application.auth.required.ExchangeTossTokenPort;
 import com.pium.application.auth.required.IssueAccessTokenPort;
 import com.pium.application.auth.required.LoadGoogleUserPort;
+import com.pium.application.auth.required.LoadKakaoUserPort;
 import com.pium.application.auth.required.LoadTossUserPort;
 import com.pium.application.auth.required.LoadUserOauthPort;
 import com.pium.application.auth.required.SaveUserOauthPort;
@@ -14,6 +16,8 @@ import com.pium.application.auth.required.SaveUserPort;
 import com.pium.application.auth.required.SaveUserProfilePort;
 import com.pium.application.auth.required.dto.GoogleAccessToken;
 import com.pium.application.auth.required.dto.GoogleAuthenticatedUser;
+import com.pium.application.auth.required.dto.KakaoAccessToken;
+import com.pium.application.auth.required.dto.KakaoAuthenticatedUser;
 import com.pium.application.auth.required.dto.TossAccessToken;
 import com.pium.application.auth.required.dto.TossAuthenticatedUser;
 import com.pium.domain.user.enumtype.OauthProvider;
@@ -42,6 +46,8 @@ class LoginServiceTest {
     private final LoadTossUserPort loadTossUserPort = mock(LoadTossUserPort.class);
     private final ExchangeGoogleTokenPort exchangeGoogleTokenPort = mock(ExchangeGoogleTokenPort.class);
     private final LoadGoogleUserPort loadGoogleUserPort = mock(LoadGoogleUserPort.class);
+    private final ExchangeKakaoTokenPort exchangeKakaoTokenPort = mock(ExchangeKakaoTokenPort.class);
+    private final LoadKakaoUserPort loadKakaoUserPort = mock(LoadKakaoUserPort.class);
     private final LoadUserOauthPort loadUserOauthPort = mock(LoadUserOauthPort.class);
     private final SaveUserPort saveUserPort = mock(SaveUserPort.class);
     private final SaveUserOauthPort saveUserOauthPort = mock(SaveUserOauthPort.class);
@@ -53,6 +59,8 @@ class LoginServiceTest {
             loadTossUserPort,
             exchangeGoogleTokenPort,
             loadGoogleUserPort,
+            exchangeKakaoTokenPort,
+            loadKakaoUserPort,
             loadUserOauthPort,
             saveUserPort,
             saveUserOauthPort,
@@ -161,7 +169,7 @@ class LoginServiceTest {
         GoogleAccessToken googleAccessToken = AuthFixture.createGoogleAccessToken();
         GoogleAuthenticatedUser googleUser = AuthFixture.createGoogleAuthenticatedUser();
 
-        when(exchangeGoogleTokenPort.exchange(command.authorizationCode())).thenReturn(googleAccessToken);
+        when(exchangeGoogleTokenPort.exchange(command.authorizationCode(), command.clientType())).thenReturn(googleAccessToken);
         when(loadGoogleUserPort.load(googleAccessToken.accessToken())).thenReturn(googleUser);
         when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.GOOGLE, ProviderUserId.of(googleUser.userKey())))
                 .thenReturn(Optional.empty());
@@ -179,5 +187,48 @@ class LoginServiceTest {
         assertThat(userOauthCaptor.getValue().getProvider()).isEqualTo(OauthProvider.GOOGLE);
         assertThat(userOauthCaptor.getValue().getProviderUserId()).isEqualTo(ProviderUserId.of(googleUser.userKey()));
         assertThat(userProfileCaptor.getValue().getNickname()).isEqualTo(googleUser.name());
+    }
+
+    @Test
+    void login_구글_WEB_clientType이면_WEB_clientType으로_토큰교환을_요청한다() {
+        LoginCommand command = AuthFixture.createWebGoogleLoginCommand();
+        GoogleAccessToken googleAccessToken = AuthFixture.createGoogleAccessToken();
+        GoogleAuthenticatedUser googleUser = AuthFixture.createGoogleAuthenticatedUser();
+
+        when(exchangeGoogleTokenPort.exchange(command.authorizationCode(), command.clientType())).thenReturn(googleAccessToken);
+        when(loadGoogleUserPort.load(googleAccessToken.accessToken())).thenReturn(googleUser);
+        when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.GOOGLE, ProviderUserId.of(googleUser.userKey())))
+                .thenReturn(Optional.empty());
+        when(issueAccessTokenPort.issue(any(UserId.class))).thenReturn("google-web-user-jwt");
+
+        service.login(command);
+
+        verify(exchangeGoogleTokenPort).exchange(command.authorizationCode(), command.clientType());
+    }
+
+    @Test
+    void login_카카오_신규회원이면_유저와_프로필을_생성한다() {
+        LoginCommand command = AuthFixture.createKakaoLoginCommand();
+        KakaoAccessToken kakaoAccessToken = AuthFixture.createKakaoAccessToken();
+        KakaoAuthenticatedUser kakaoUser = AuthFixture.createKakaoAuthenticatedUser();
+
+        when(exchangeKakaoTokenPort.exchange(command.authorizationCode())).thenReturn(kakaoAccessToken);
+        when(loadKakaoUserPort.load(kakaoAccessToken.accessToken())).thenReturn(kakaoUser);
+        when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.KAKAO, ProviderUserId.of(kakaoUser.userKey())))
+                .thenReturn(Optional.empty());
+        when(issueAccessTokenPort.issue(any(UserId.class))).thenReturn("kakao-user-jwt");
+
+        AuthTokenView result = service.login(command);
+
+        ArgumentCaptor<UserOauth> userOauthCaptor = ArgumentCaptor.forClass(UserOauth.class);
+        ArgumentCaptor<UserProfile> userProfileCaptor = ArgumentCaptor.forClass(UserProfile.class);
+
+        verify(saveUserOauthPort).save(userOauthCaptor.capture());
+        verify(saveUserProfilePort).save(userProfileCaptor.capture());
+
+        assertThat(result.accessToken()).isEqualTo("kakao-user-jwt");
+        assertThat(userOauthCaptor.getValue().getProvider()).isEqualTo(OauthProvider.KAKAO);
+        assertThat(userOauthCaptor.getValue().getProviderUserId()).isEqualTo(ProviderUserId.of(kakaoUser.userKey()));
+        assertThat(userProfileCaptor.getValue().getNickname()).isEqualTo(kakaoUser.name());
     }
 }

@@ -31,7 +31,8 @@ public class UserOauthPersistenceAdapter implements SaveUserOauthPort, LoadUserO
             OauthProvider provider,
             ProviderUserId providerUserId
     ) {
-        return userOauthJpaRepository.findByProviderAndProviderUserId(provider, providerUserId.value())
+        return userOauthJpaRepository
+                .findByProviderAndProviderUserId(provider, providerUserId.value())
                 .map(UserOauthEntity::toDomain);
     }
 }

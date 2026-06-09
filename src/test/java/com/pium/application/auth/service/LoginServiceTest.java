@@ -10,6 +10,7 @@ import com.pium.application.auth.required.IssueAccessTokenPort;
 import com.pium.application.auth.required.LoadGoogleUserPort;
 import com.pium.application.auth.required.LoadKakaoUserPort;
 import com.pium.application.auth.required.LoadTossUserPort;
+import com.pium.application.auth.required.LoadUserPort;
 import com.pium.application.auth.required.LoadUserOauthPort;
 import com.pium.application.auth.required.SaveUserOauthPort;
 import com.pium.application.auth.required.SaveUserPort;
@@ -21,6 +22,8 @@ import com.pium.application.auth.required.dto.KakaoAuthenticatedUser;
 import com.pium.application.auth.required.dto.TossAccessToken;
 import com.pium.application.auth.required.dto.TossAuthenticatedUser;
 import com.pium.domain.user.enumtype.OauthProvider;
+import com.pium.domain.user.exception.UserErrorCode;
+import com.pium.domain.user.exception.UserException;
 import com.pium.domain.user.model.User;
 import com.pium.domain.user.model.UserOauth;
 import com.pium.domain.user.model.UserProfile;
@@ -33,6 +36,7 @@ import org.mockito.InOrder;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -49,6 +53,7 @@ class LoginServiceTest {
     private final ExchangeKakaoTokenPort exchangeKakaoTokenPort = mock(ExchangeKakaoTokenPort.class);
     private final LoadKakaoUserPort loadKakaoUserPort = mock(LoadKakaoUserPort.class);
     private final LoadUserOauthPort loadUserOauthPort = mock(LoadUserOauthPort.class);
+    private final LoadUserPort loadUserPort = mock(LoadUserPort.class);
     private final SaveUserPort saveUserPort = mock(SaveUserPort.class);
     private final SaveUserOauthPort saveUserOauthPort = mock(SaveUserOauthPort.class);
     private final SaveUserProfilePort saveUserProfilePort = mock(SaveUserProfilePort.class);
@@ -65,7 +70,8 @@ class LoginServiceTest {
             saveUserPort,
             saveUserOauthPort,
             saveUserProfilePort,
-            issueAccessTokenPort
+            issueAccessTokenPort,
+            loadUserPort
     );
 
     @Test
@@ -85,6 +91,7 @@ class LoginServiceTest {
         when(loadTossUserPort.load(tossAccessToken.accessToken())).thenReturn(tossUser);
         when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.TOSS, ProviderUserId.of(tossUser.userKey())))
                 .thenReturn(Optional.of(existingUserOauth));
+        when(loadUserPort.load(existingUser.getId())).thenReturn(Optional.of(existingUser));
         when(issueAccessTokenPort.issue(existingUser.getId())).thenReturn("service-jwt-token");
 
         AuthTokenView result = service.login(command);
@@ -101,6 +108,36 @@ class LoginServiceTest {
         );
         inOrder.verify(issueAccessTokenPort).issue(existingUser.getId());
 
+        verify(saveUserPort, never()).save(any());
+        verify(saveUserOauthPort, never()).save(any());
+        verify(saveUserProfilePort, never()).save(any());
+    }
+
+    @Test
+    void login_기존_oauth회원이_비활성이면_서비스토큰을_발급하지_않는다() {
+        LoginCommand command = AuthFixture.createTossLoginCommand();
+        TossAccessToken tossAccessToken = AuthFixture.createTossAccessToken();
+        TossAuthenticatedUser tossUser = AuthFixture.createTossAuthenticatedUser();
+        User existingUser = User.create();
+        existingUser.withdraw();
+        UserOauth existingUserOauth = UserOauth.create(
+                existingUser.getId(),
+                OauthProvider.TOSS,
+                ProviderUserId.of(tossUser.userKey())
+        );
+
+        when(exchangeTossTokenPort.exchange(command.authorizationCode(), command.referrer())).thenReturn(tossAccessToken);
+        when(loadTossUserPort.load(tossAccessToken.accessToken())).thenReturn(tossUser);
+        when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.TOSS, ProviderUserId.of(tossUser.userKey())))
+                .thenReturn(Optional.of(existingUserOauth));
+        when(loadUserPort.load(existingUser.getId())).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> service.login(command))
+                .isInstanceOf(UserException.class)
+                .extracting("errorCode")
+                .isEqualTo(UserErrorCode.INACTIVE_USER);
+
+        verify(issueAccessTokenPort, never()).issue(any());
         verify(saveUserPort, never()).save(any());
         verify(saveUserOauthPort, never()).save(any());
         verify(saveUserProfilePort, never()).save(any());

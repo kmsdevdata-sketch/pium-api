@@ -12,6 +12,7 @@ import com.pium.application.user.home.dto.UserHomeView;
 import com.pium.application.user.home.provided.GetUserHome;
 import com.pium.application.user.bootstrap.dto.UserBootstrapView;
 import com.pium.application.user.bootstrap.provided.GetUserBootstrap;
+import com.pium.application.user.withdrawn.provided.WithdrawnUser;
 import com.pium.domain.user.vo.UserId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +25,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.verify;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -47,6 +51,21 @@ class UserControllerTest {
 
     @MockitoBean
     private GetProductRecommendation getProductRecommendation;
+
+    @MockitoBean
+    private WithdrawnUser withdrawnUser;
+
+    @Test
+    void withdrawn_현재사용자를_탈퇴처리한다() throws Exception {
+        mockMvc.perform(delete("/api/v1/users/me")
+                        .with(user(AuthFixture.createAuthenticatedUser(UserId.of("user-test-001"))))
+                        .with(csrf())
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success").value(true));
+
+        verify(withdrawnUser).withdrawn(UserId.of("user-test-001"));
+    }
 
     @Test
     void listSkinAnalysisResults_returnsApiResponse() throws Exception {

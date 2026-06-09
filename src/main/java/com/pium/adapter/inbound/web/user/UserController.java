@@ -12,15 +12,12 @@ import com.pium.application.user.home.dto.UserHomeView;
 import com.pium.application.user.home.provided.GetUserHome;
 import com.pium.application.user.bootstrap.dto.UserBootstrapView;
 import com.pium.application.user.bootstrap.provided.GetUserBootstrap;
+import com.pium.application.user.withdrawn.provided.WithdrawnUser;
 import com.pium.domain.skinanalysis.vo.SkinAnalysisResultId;
 import com.pium.domain.user.vo.UserId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -28,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final GetUserHome getUserHome;
+    private final WithdrawnUser withdrawnUser;
     private final GetUserBootstrap getUserBootstrap;
     private final GetSkinAnalysisResult getSkinAnalysisResult;
     private final GetProductRecommendation getProductRecommendation;
@@ -52,6 +50,14 @@ public class UserController {
     ) {
         UserBootstrapView response = getUserBootstrap.getUserBootstrap(UserId.of(user.userId()));
         return ApiResponse.ok(UserBootstrapResponse.from(response));
+    }
+
+    @DeleteMapping("/me")
+    public ApiResponse<Void> withdrawn(
+            @AuthenticationPrincipal AuthenticatedUser user
+    ) {
+        withdrawnUser.withdrawn(UserId.of(user.userId()));
+        return ApiResponse.ok();
     }
 
     /**
@@ -91,6 +97,9 @@ public class UserController {
         return ApiResponse.ok(SkinAnalysisResultResponse.from(response));
     }
 
+    /**
+     * 상품추천 API
+     */
     @GetMapping("/me/recommendations")
     public ApiResponse<ProductRecommendationListView> getLatestRecommendations(
             @AuthenticationPrincipal AuthenticatedUser user,
@@ -100,6 +109,9 @@ public class UserController {
         return ApiResponse.ok(response);
     }
 
+    /**
+     * 상품 추천 상세 API
+     */
     @GetMapping("/me/recommendations/{productId}")
     public ApiResponse<ProductRecommendationDetailView> getRecommendationDetail(
             @AuthenticationPrincipal AuthenticatedUser user,

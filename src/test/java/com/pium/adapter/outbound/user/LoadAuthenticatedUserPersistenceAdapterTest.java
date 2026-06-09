@@ -5,6 +5,7 @@ import com.pium.adapter.outbound.user.persistence.entity.UserEntity;
 import com.pium.adapter.outbound.user.persistence.entity.UserProfileEntity;
 import com.pium.adapter.outbound.user.persistence.repository.UserJpaRepository;
 import com.pium.adapter.outbound.user.persistence.repository.UserProfileJpaRepository;
+import com.pium.domain.user.enumtype.UserStatus;
 import com.pium.domain.user.model.User;
 import com.pium.domain.user.model.UserProfile;
 import com.pium.domain.user.vo.UserId;
@@ -32,7 +33,8 @@ class LoadAuthenticatedUserPersistenceAdapterTest {
         User user = User.create();
         UserProfile userProfile = UserProfile.create(user.getId(), "피움닉네임", null);
 
-        when(userJpaRepository.findById(user.getId().value())).thenReturn(Optional.of(UserEntity.from(user)));
+        when(userJpaRepository.findByUserIdAndStatus(user.getId().value(), UserStatus.ACTIVE))
+                .thenReturn(Optional.of(UserEntity.from(user)));
         when(userProfileJpaRepository.findByUserId(user.getId().value())).thenReturn(Optional.of(UserProfileEntity.from(userProfile)));
 
         Optional<AuthenticatedUser> result = adapter.load(user.getId());
@@ -50,9 +52,9 @@ class LoadAuthenticatedUserPersistenceAdapterTest {
     @Test
     void load_비활성사용자는_프로필조회없이_반환하지않는다() {
         User user = User.create();
-        user.withdraw();
 
-        when(userJpaRepository.findById(user.getId().value())).thenReturn(Optional.of(UserEntity.from(user)));
+        when(userJpaRepository.findByUserIdAndStatus(user.getId().value(), UserStatus.ACTIVE))
+                .thenReturn(Optional.empty());
 
         Optional<AuthenticatedUser> result = adapter.load(user.getId());
 
@@ -63,7 +65,8 @@ class LoadAuthenticatedUserPersistenceAdapterTest {
     @Test
     void load_존재하지않는_사용자는_반환하지않는다() {
         UserId missingUserId = UserId.of("missing-user");
-        when(userJpaRepository.findById(missingUserId.value())).thenReturn(Optional.empty());
+        when(userJpaRepository.findByUserIdAndStatus(missingUserId.value(), UserStatus.ACTIVE))
+                .thenReturn(Optional.empty());
 
         Optional<AuthenticatedUser> result = adapter.load(missingUserId);
 

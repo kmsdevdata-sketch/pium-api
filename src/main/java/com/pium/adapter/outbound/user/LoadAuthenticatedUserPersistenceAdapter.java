@@ -24,13 +24,9 @@ public class LoadAuthenticatedUserPersistenceAdapter implements LoadAuthenticate
     // 단순 시큐리티 principal조립용이여서 도메인 모델로 재매핑 하지않음
     @Override
     public Optional<AuthenticatedUser> load(UserId userId) {
-        return userJpaRepository.findById(userId.value())
-                .filter(this::isActiveUser)
+        return userJpaRepository
+                .findByUserIdAndStatus(userId.value(), UserStatus.ACTIVE)
                 .flatMap(this::toAuthenticatedUser);
-    }
-
-    private boolean isActiveUser(UserEntity userEntity) {
-        return userEntity.getStatus() == UserStatus.ACTIVE;
     }
 
     private Optional<AuthenticatedUser> toAuthenticatedUser(UserEntity userEntity) {

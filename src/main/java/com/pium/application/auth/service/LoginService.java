@@ -4,17 +4,7 @@ import com.pium.application.auth.dto.AuthTokenView;
 import com.pium.application.auth.dto.ExternalAuthenticatedUser;
 import com.pium.application.auth.dto.LoginCommand;
 import com.pium.application.auth.provider.Login;
-import com.pium.application.auth.required.ExchangeGoogleTokenPort;
-import com.pium.application.auth.required.ExchangeKakaoTokenPort;
-import com.pium.application.auth.required.ExchangeTossTokenPort;
-import com.pium.application.auth.required.IssueAccessTokenPort;
-import com.pium.application.auth.required.LoadGoogleUserPort;
-import com.pium.application.auth.required.LoadKakaoUserPort;
-import com.pium.application.auth.required.LoadTossUserPort;
-import com.pium.application.auth.required.LoadUserOauthPort;
-import com.pium.application.auth.required.SaveUserOauthPort;
-import com.pium.application.auth.required.SaveUserPort;
-import com.pium.application.auth.required.SaveUserProfilePort;
+import com.pium.application.auth.required.*;
 import com.pium.application.auth.required.dto.GoogleAccessToken;
 import com.pium.application.auth.required.dto.GoogleAuthenticatedUser;
 import com.pium.application.auth.required.dto.KakaoAccessToken;
@@ -22,6 +12,8 @@ import com.pium.application.auth.required.dto.KakaoAuthenticatedUser;
 import com.pium.application.auth.required.dto.TossAccessToken;
 import com.pium.application.auth.required.dto.TossAuthenticatedUser;
 import com.pium.domain.user.enumtype.OauthProvider;
+import com.pium.domain.user.exception.UserErrorCode;
+import com.pium.domain.user.exception.UserException;
 import com.pium.domain.user.model.User;
 import com.pium.domain.user.model.UserOauth;
 import com.pium.domain.user.model.UserProfile;
@@ -48,6 +40,7 @@ public class LoginService implements Login {
     private final SaveUserOauthPort saveUserOauthPort;
     private final SaveUserProfilePort saveUserProfilePort;
     private final IssueAccessTokenPort issueAccessTokenPort;
+    private final LoadUserPort loadUserPort;
 
     @Override
     public AuthTokenView login(LoginCommand command) {
@@ -111,7 +104,14 @@ public class LoginService implements Login {
                         externalUser.providerUserId()
                 )
                 .map(UserOauth::getUserId)
+                .map(this::loadActiveUserId)
                 .orElseGet(() -> createNewUser(externalUser));
+    }
+
+    private UserId loadActiveUserId(UserId userId) {
+        return loadUserPort.load(userId)
+                .map(User::getId)
+                .orElseThrow(() -> new UserException(UserErrorCode.INACTIVE_USER));
     }
 
     private UserId createNewUser(ExternalAuthenticatedUser externalUser) {

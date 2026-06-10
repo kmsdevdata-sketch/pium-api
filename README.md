@@ -7,9 +7,11 @@
 ---
 ## Live Service
 
-- 서비스 링크: [피움 바로가기](https://minion.toss.im/zge4f54D)
+- 서비스 링크:
+  - [피움 앱인토스 바로가기](https://minion.toss.im/zge4f54D)
+  - [피움 웹 바로가기](https://pium.app)
 - 참고: 모바일 환경에서 열어야 정상적으로 확인 가능합니다.
-- 실행 환경: Toss 앱인토스 미니앱
+- 실행 환경: Toss 앱인토스 미니앱 , 웹 환경(동일 API사용 디자인 지속 업데이트중)
 - 백엔드 배포: DigitalOcean, Docker, Nginx, HTTPS
 
 > 현재 클라이언트는 Toss 앱인토스 WebView로 제공하고 있지만,  

@@ -20,6 +20,9 @@
 </p>
 
 ---
+## Architecture Diagram 
+<img width="787" height="517" alt="arhitecture-diagram" src="https://github.com/user-attachments/assets/dd42fb77-b5f3-46e0-868e-40bbabcfecb3" />
+
 ## Core Feature
 ### 규칙 기반 피부 상태 분석 
 피움의 피부 분석은 AI API에 의존하지 않고,  

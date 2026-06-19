@@ -1,5 +1,9 @@
 ## 피움 Pium · Backend API
-> 토스 미니앱(앱인토스) 및 웹환경에서 실운영 중인 피부타입 분석 서비스의 백엔드입니다.
+> 토스 미니앱(앱인토스)으로 실운영 중인 피부타입 분석 서비스의 백엔드입니다.
+> 
+> 팀 프로젝트를 혼자 재설계하였고, 해당 레포지토리는 전적으로 제 작업물만 담고 있습니다
+> 
+> 원본 팀 프로젝트 레포지토리 -> [skin-service](https://github.com/swyp-3team/skin-service.git)
 ---
 ## Live Service
 
@@ -7,23 +11,68 @@
   - [피움 앱인토스 바로가기](https://minion.toss.im/zge4f54D)
   - [피움 웹 바로가기](https://pium.app)
 - 참고: 모바일 환경에서 열어야 정상적으로 확인 가능합니다.
-- 실행 환경: Toss 앱인토스 미니앱 , 웹 환경(동일 API사용 디자인 지속 업데이트중)
+- 실행 환경: Toss 앱인토스 미니앱
 - 백엔드 배포: DigitalOcean, Docker, Nginx, HTTPS
 
-> 현재 클라이언트는 Toss 앱인토스 WebView로 제공하고 있지만,  
-> 백엔드는 클라이언트 종류에 의존하지 않는 REST API로 구성해 웹 클라이언트 확장도 고려했습니다.
-
-<p align="center">
-  <img src="docs/assets/pium-home.PNG" width="240" alt="피움 홈 화면" />
-  <img src="docs/assets/pium-survey.PNG" width="240" alt="피움 설문 화면" />
-  <img src="docs/assets/pium-result.PNG" width="240" alt="피움 결과 화면" />
-</p>
+> 현재 Toss 앱인토스와 웹 서비스로 운영 중이며,
+> 백엔드는 클라이언트 종류에 의존하지 않는 REST API로 구성했습니다.
 
 ---
-## Architecture Diagram 
-<img width="787" height="517" alt="arhitecture-diagram" src="https://github.com/user-attachments/assets/dd42fb77-b5f3-46e0-868e-40bbabcfecb3" />
+## Why
 
-## Core Feature
+피부 상태는 하나의 피부 타입으로 설명하기 어렵습니다.
+건조함과 유분, 트러블과 민감처럼 여러 신호가 동시에 나타날 수 있으며, 설문 점수의 작은 차이를 정밀한 피부 상태 차이로 해석하는 것도 적절하지 않습니다.
+
+또한 특정 고민만 보고 기능이 강한 제품을 추천하면 현재 피부 장벽이나 민감 상태에 부담을 줄 수 있습니다.
+피움은 피부를 7개 상태축의 조합으로 해석하고, 사용자의 목표보다 현재 피부가 감당할 수 있는 조건을 우선하여 상품을 추천합니다.
+
+핵심 목표는 단순히 효능이 맞는 상품을 찾는 것이 아니라,
+**추천 이유와 주의점을 설명할 수 있는 안전한 후보를 제공하는 것**입니다.
+
+---
+## Product Overview
+
+### Toss Mini App
+<p align="center">
+  <img src="docs/assets/pium_screen_view/pium_toss01.png" width="31%" alt="피움 미니앱 진단 화면" />
+  <img src="docs/assets/pium_screen_view/pium_toss02.png" width="31%" alt="피움 미니앱 진단 결과 화면" />
+  <img src="docs/assets/pium_screen_view/pium_toss03.png" width="31%" alt="피움 미니앱 추천 화면" />
+</p>
+
+### Web
+<table>
+  <tr>
+    <td align="center"><img src="docs/assets/pium_screen_view/pium_web_home.png" width="100%" alt="피움 웹 홈 화면" /></td>
+    <td align="center"><img src="docs/assets/pium_screen_view/pium_web_analyze.png" width="100%" alt="피움 웹 피부 진단 결과" /></td>
+    <td align="center"><img src="docs/assets/pium_screen_view/pium_web_recommendation.png" width="100%" alt="피움 웹 추천 상품" /></td>
+    <td align="center"><img src="docs/assets/pium_screen_view/pium_web_product_detail.png" width="100%" alt="피움 웹 추천 상품 상세" /></td>
+  </tr>
+  <tr>
+    <td align="center">홈</td>
+    <td align="center">피부 진단 결과</td>
+    <td align="center">추천 상품</td>
+    <td align="center">추천 상품 상세</td>
+  </tr>
+</table>
+
+### Admin
+<table>
+  <tr>
+    <td align="center"><img src="docs/assets/pium_screen_view/pium_admin_insight.png" width="100%" alt="피움 관리자 유저 인사이트" /></td>
+    <td align="center"><img src="docs/assets/pium_screen_view/pium_admin_user_list.png" width="100%" alt="피움 관리자 유저 목록" /></td>
+    <td align="center"><img src="docs/assets/pium_screen_view/pium_admin_product_list.png" width="100%" alt="피움 관리자 상품 목록" /></td>
+    <td align="center"><img src="docs/assets/pium_screen_view/pium_admin_product_registry.png" width="100%" alt="피움 관리자 상품 등록" /></td>
+  </tr>
+  <tr>
+    <td align="center">유저 인사이트</td>
+    <td align="center">유저 목록</td>
+    <td align="center">상품 목록</td>
+    <td align="center">상품 등록</td>
+  </tr>
+</table>
+
+---
+## Core Features
 ### 규칙 기반 피부 상태 분석 
 피움의 피부 분석은 AI API에 의존하지 않고,  
 설문 응답을 도메인 규칙으로 해석해 피부 상태를 계산합니다.
@@ -121,45 +170,59 @@ SkinAnalysisResult
 
 ---
 
-## Production
-현재 백엔드는 DigitalOcean 서버에서 Docker기반으로 운영 중이며,  
-토스 앱인토스 WebView 클라이언트와 HTTPS 통신으로 연동되어 있습니다.
+## System Design
 
-### 배포 파이프라인 
-배포 파이프라인은 GitHub Actions에서 CI 성공 후 GHCR 이미지를 빌드하고,  
-서버에서 신규 앱 컨테이너를 반대 슬롯에 띄운 뒤 health check가 통과하면  
-Nginx upstream을 새포트로 전환하는 방식으로 구성했습니다.  
-```text
-GitHub Actions CI
--> bootJar / test
--> Docker image build & push to GHCR
--> SSH deploy
--> app-blue / app-green 슬롯 전환 
--> /actuator/health 확인 
--> Nginx upstream reload
-```
----
+### System Architecture
 
-## Architecture
+<p align="center">
+  <img src="docs/assets/pium_diagram/pium_architecture.drawio.png" width="100%" alt="피움 시스템 아키텍처" />
+</p>
+
+클라이언트 요청은 Nginx를 통해 Spring Boot 애플리케이션으로 전달되며, 영속 데이터는 MySQL에 저장합니다.
+사진 분석은 비동기로 실행하고 Caffeine Cache에서 임시 세션으로 관리한 뒤 최종 진단 결과에 통합합니다.
+OpenAI API와 OAuth Provider는 외부 어댑터를 통해 연동합니다.
+
+### Backend Architecture
+
 이 프로젝트는 **Adapter** - **Application** - **Domain** 계층을 기준으로 구성했습니다.  
-```text
-adapter
-  ├─ inbound   // Web API, request/response mapping
-  └─ outbound  // Persistence, OAuth provider API, OpenAI, JWT
 
-application
-  ├─ auth
-  ├─ user
-  ├─ skinanalysis
-  └─ recommendation
+```mermaid
+flowchart TB
 
-domain
-  ├─ user
-  ├─ skinanalysis
-  ├─ product
-  ├─ productprofile
-  └─ recommendation
+subgraph Inbound["Inbound Adapters"]
+API["REST API Controllers"]
+end
+
+subgraph Application["Application Layer"]
+AuthUC["Authentication"]
+AnalysisUC["Skin Analysis"]
+ImageUC["Image Analysis"]
+RecommendationUC["Product Recommendation"]
+AdminUC["Admin Management"]
+end
+
+subgraph Domain["Domain Layer"]
+User["User Domain"]
+Skin["Skin Analysis Domain"]
+Recommendation["Recommendation Domain"]
+Product["Product Domain"]
+end
+
+subgraph Outbound["Outbound Adapters"]
+DB["MySQL / JPA"]
+OAuth["OAuth Providers"]
+AI["OpenAI"]
+JWT["JWT"]
+end
+
+API --> Application
+Application --> Domain
+Application --> Outbound
 ```
+
+Inbound Adapter가 API 요청을 받아 Application의 Use Case를 실행하고, Application은 Domain의 분석·추천 정책을 조합합니다.
+DB, OAuth, JWT, OpenAI 같은 외부 기술은 Outbound Adapter로 분리하여 핵심 도메인 로직이 특정 인프라 구현에 직접 의존하지 않도록 설계했습니다.
+
 ---
 
 ## Domain Design
@@ -179,40 +242,82 @@ domain
 ```
 ---
 
-## Problems & Decisions
-### 1. 설문 점수를 그대로 피부 상태로 말할 수 없었다
+## Technical Challenges
 
-설문 점수는 물리 단위가 아니기 때문에 `70점`이 `10점`보다 정확히 7배 심각하다고 말할 수 없습니다.  
-그래서 점수는 내부 계산 신호로만 사용하고, 사용자에게는 `LOW / MID / HIGH` 상태 라벨과 근거 문장으로 전달했습니다.
+### 설문 점수를 복합 피부 상태로 해석하기
 
-### 2. 장벽 상태는 사용자가 직접 인식하기 어렵다
+설문 점수는 물리적 측정값이 아니므로 점수 차이를 피부 상태의 정확한 비율로 해석할 수 없습니다.
+또한 건조와 유분처럼 서로 다른 신호가 동시에 나타나는 복합 상태를 하나의 피부 타입으로 설명하기 어렵습니다.
 
-피부 장벽은 직접 문항으로 묻기보다 건조, 민감, 자극 반응 패턴에서 파생하는 신호로 설계했습니다.  
-이 `BARRIER` 값은 이후 추천 단계에서 안전 게이트로 사용할 수 있도록 분리했습니다.
+이를 해결하기 위해 피부 상태를 7개 지표로 분리하고 점수는 내부 계산에만 사용했습니다.
+사용자에게는 `LOW / MID / HIGH` 상태와 지표 조합에 따른 해석을 제공합니다. 장벽 상태는 직접 문항으로 단정하지 않고 건조와 민감 신호를 기반으로 파생합니다.
 
-### 3. 추천 기능을 분석 로직과 분리했다
+### 진단 완료율 개선을 위한 AI 사진 분석
 
-상품 추천은 분석 점수를 직접 읽어 상품을 고르는 방식으로 만들지 않았습니다.  
-먼저 `SkinAnalysisResult`를 `SkinInterpretation`으로 해석하고,  
-그 결과를 `ProductSearchSpec`으로 번역한 뒤 상품의 `ProductProfile`과 비교합니다.
+서비스 운영 과정에서 11개의 설문 문항이 진입 장벽으로 작용하여, 진단 결과를 확인하기 전에 이탈하는 사용자가 많다는 문제를 확인했습니다.
 
-이렇게 분리해 설문 진단과 사진 진단이 같은 결과 모델을 공유하고,  
-추천 도메인은 입력 경로가 아니라 피부 상태와 goal만 바라보도록 설계했습니다.
+문항을 단순히 축소하는 대신 각 피부 지표의 측정 방식을 재검토했습니다.
+이미지에서 비교적 관측하기 쉬운 트러블·색소·노화 지표는 AI 분석 결과를 중심으로 산출하고, 건조·유분·민감처럼 사진만으로 판단하기 어려운 지표는 보조 문항과 결합했습니다. 기존 설문 진단도 유지해 사용자가 진단 방식을 선택할 수 있도록 했습니다.
 
-### 4. Toss 로그인 특수성을 인증 도메인 밖으로 격리했다
+사진 분석은 비동기로 실행하여 분석 시간 동안 사용자가 보조 문항에 응답할 수 있도록 구성했습니다.
+모델 선정 시 분석 품질뿐 아니라 응답 시간과 API 비용을 함께 검토하여 사용자 경험, 분석 신뢰도, 운영 비용 사이의 균형을 고려했습니다.
 
-Toss 로그인은 authorizationCode, referrer, mTLS 등 플랫폼 특성이 있지만,  
-서비스 내부에서는 provider 기반 외부 사용자 식별 결과만 다루도록 분리했습니다.  
-로그인 성공 후 프론트에는 외부 provider 토큰이 아닌 자체 JWT만 반환합니다.
+### AI 기반 상품 메타데이터 생성과 안전한 추천
 
-Google/Kakao 로그인도 같은 provider 기반 흐름에 맞췄고,  
-Google은 admin/web 리다이렉트 URI를 `clientType`으로 구분합니다.
+상품의 전성분과 설명은 비정형 데이터이기 때문에 추천에 필요한 특성을 사람이 일일이 분류하면 운영 비용이 커집니다.
+반대로 AI가 상품 추천까지 직접 수행하면 판단 근거와 일관성을 통제하기 어렵습니다.
 
-### 5. 탈퇴 회원은 인증 경계에서 차단한다
+AI는 상품을 추천하는 대신 상품 원본 데이터를 `ProductProfile` 메타데이터로 구조화하는 데 사용했습니다.
+효능·주의 특성, 성분군, 근거와 신뢰도를 자동 생성하여 상품 등록 생산성을 높이고, 실제 추천은 서버의 안전성 게이트와 점수 정책이 담당하도록 역할을 분리했습니다.
 
-회원 탈퇴는 사용자를 삭제하지 않고 상태를 변경하는 방식으로 처리합니다.  
-JWT로 사용자를 로드할 때 ACTIVE 상태만 인증 사용자로 인정하고,  
-기존 OAuth 매핑이 남아 있더라도 탈퇴 상태의 사용자는 로그인 흐름에서 차단합니다.
+---
+## Infrastructure & Deployment
+
+<p align="center">
+  <img src="docs/assets/pium_diagram/deployment.drawio.png" width="100%" alt="피움 CI/CD 및 Blue-Green 배포" />
+</p>
+
+### CI/CD Pipeline
+
+기능 브랜치를 `main`에 병합하면 GitHub Actions CI가 테스트와 `bootJar` 빌드를 수행합니다.
+CI 성공 시 Deploy Workflow가 Docker 이미지를 빌드하여 GHCR에 SHA 및 `latest` 태그로 업로드합니다.
+
+```text
+Pull Request Merge
+-> GitHub Actions CI
+-> Test / bootJar
+-> Docker Image Build
+-> GHCR Push
+-> SSH Deploy
+```
+
+### Blue-Green Deployment
+
+GitHub Actions는 배포 설정과 스크립트를 SCP로 복사한 뒤 SSH를 통해 DigitalOcean 서버의 `deploy.sh`를 실행합니다.
+서버는 GHCR에서 신규 이미지를 Pull하고, 현재 운영 중이지 않은 Blue/Green 슬롯에 새로운 컨테이너를 실행합니다.
+
+| 슬롯 | 호스트 포트 | 컨테이너 포트 |
+| --- | ---: | ---: |
+| Blue | 8081 | 8080 |
+| Green | 8082 | 8080 |
+
+신규 슬롯의 `/actuator/health`가 정상 응답하면 Nginx upstream을 해당 슬롯으로 변경하고 기존 슬롯을 종료합니다.
+
+### Deployment Failure Handling
+
+신규 컨테이너의 Health Check가 실패하면 Nginx upstream을 변경하지 않습니다.
+따라서 기존 컨테이너가 계속 요청을 처리하고 실패한 신규 배포의 로그를 확인할 수 있습니다.
+
+> **정상 상태가 확인된 컨테이너만 운영 트래픽을 받도록 하여 배포 중단 위험을 줄였습니다.**
+
+---
+## Operating a Real Service
+
+- 실제 사용자 흐름을 바탕으로 긴 설문으로 인한 이탈 문제를 확인하고 사진 진단 경로를 추가했습니다.
+- 사용자 현황, 진단 기록, 피부 지표와 관심 고민 분포를 확인할 수 있는 관리자 조회 기능을 구축했습니다.
+- 관리자가 상품 원본 정보와 `ProductProfile`을 등록·검수·재생성할 수 있도록 운영 기능을 분리했습니다.
+- OpenAI와 OAuth 같은 외부 서비스 실패를 내부 오류와 구분하고, 사진 분석 실패 시 재촬영 또는 설문 진단으로 전환할 수 있도록 구성했습니다.
+
 ---
 
 ## Documents

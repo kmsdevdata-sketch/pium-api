@@ -18,7 +18,7 @@ class JwtAccessTokenIssuerAdapterTest {
 
     @Test
     void issue_유저아이디를_subject로_가지는_jwt를_발급한다() {
-        JwtProperties jwtProperties = new JwtProperties(SECRET, 1800L);
+        JwtProperties jwtProperties = new JwtProperties(SECRET, 1800L, 1209600L);
         JwtAccessTokenIssuerAdapter adapter = new JwtAccessTokenIssuerAdapter(jwtProperties);
         UserId userId = UserId.of("user-001");
         Instant beforeIssue = Instant.now();

@@ -2,6 +2,10 @@ package com.pium.adapter.inbound.web.skinanalysis.analyze;
 
 import com.pium.application.skinanalysis.analyze.dto.AnalyzeCommand;
 import com.pium.domain.user.vo.UserId;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -9,8 +13,11 @@ import java.util.List;
  * 설문 분석 요청 DTO
  */
 public record AnalyzeSurveyRequest(
-        List<AnswerRequest> answers,
-        List<String> goals
+        @NotEmpty
+        List<@Valid @NotNull AnswerRequest> answers,
+
+        @NotEmpty
+        List<@NotBlank String> goals
 ) {
 
     public AnalyzeCommand toCommand(UserId userId) {
@@ -24,8 +31,11 @@ public record AnalyzeSurveyRequest(
      * 문항 응답 요청 모델
      */
     public record AnswerRequest(
+            @NotBlank
             String questionId,
-            List<String> selectedOptionCodes
+
+            @NotEmpty
+            List<@NotBlank String> selectedOptionCodes
     ) {
     }
 }

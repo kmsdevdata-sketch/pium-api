@@ -9,6 +9,7 @@ import com.pium.application.skinanalysis.analyze.provided.AnalyzeSkinAnalysis;
 import com.pium.application.skinanalysis.spec.provided.GetSurveySpec;
 import com.pium.application.skinanalysis.analyze.dto.AnalyzeResultView;
 import com.pium.application.skinanalysis.spec.dto.SurveySpecView;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -36,7 +37,7 @@ public class SurveyController {
      */
     @PostMapping("/analyze")
     public ApiResponse<AnalyzeSurveyResponse> analyze(
-            @RequestBody AnalyzeSurveyRequest request,
+            @Valid @RequestBody AnalyzeSurveyRequest request,
             Authentication authentication
     ) {
         AnalyzeResultView response = analyzeSkinAnalysis.analyze(

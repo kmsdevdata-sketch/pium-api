@@ -2,6 +2,7 @@ package com.pium.application.user.withdrawn.service;
 
 import com.pium.application.auth.required.LoadUserPort;
 import com.pium.application.auth.required.SaveUserPort;
+import com.pium.application.auth.service.AuthTokenService;
 import com.pium.application.user.withdrawn.provided.WithdrawnUser;
 import com.pium.domain.user.exception.UserErrorCode;
 import com.pium.domain.user.exception.UserException;
@@ -16,6 +17,7 @@ public class WithdrawnUserService implements WithdrawnUser {
 
     private final LoadUserPort loadUserPort;
     private final SaveUserPort saveUserPort;
+    private final AuthTokenService authTokenService;
 
     @Override
     public void withdrawn(UserId userId) {
@@ -24,5 +26,6 @@ public class WithdrawnUserService implements WithdrawnUser {
 
         user.withdraw();
         saveUserPort.save(user);
+        authTokenService.revokeAll(userId);
     }
 }

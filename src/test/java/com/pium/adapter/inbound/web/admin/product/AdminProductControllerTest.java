@@ -179,7 +179,9 @@ class AdminProductControllerTest {
         mockMvc.perform(get("/api/v1/admin/products")
                         .with(user(AuthFixture.createAuthenticatedUser(UserId.of("user-001"))))
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.error.code").value("COMMON_403_001"));
     }
 
     @Test

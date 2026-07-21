@@ -33,7 +33,7 @@ class JwtAuthenticationFilterTest {
 
     private final LoadAuthenticatedUserPort loadAuthenticatedUserPort = mock(LoadAuthenticatedUserPort.class);
     private final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(
-            new JwtProperties(SECRET, 3600L),
+            new JwtProperties(SECRET, 3600L, 1209600L),
             loadAuthenticatedUserPort
     );
 

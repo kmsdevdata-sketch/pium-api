@@ -39,13 +39,18 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/error",
                                 "/actuator/health",
-                                "/api/v1/auth/login"
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/refresh",
+                                "/api/v1/auth/logout"
                         ).permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(Customizer.withDefaults());
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(new ApiAuthenticationEntryPoint())
+                        .accessDeniedHandler(new ApiAccessDeniedHandler())
+                );
 
         return http.build();
     }

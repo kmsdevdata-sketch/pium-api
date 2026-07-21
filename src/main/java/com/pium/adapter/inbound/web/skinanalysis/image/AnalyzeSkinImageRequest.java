@@ -2,6 +2,10 @@ package com.pium.adapter.inbound.web.skinanalysis.image;
 
 import com.pium.application.skinanalysis.image.dto.AnalyzeImageCommand;
 import com.pium.domain.user.vo.UserId;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
@@ -11,9 +15,14 @@ import java.util.List;
  * 선분석 세션과 보조 문항을 내부 command로 변환한다.
  */
 public record AnalyzeSkinImageRequest(
+    @NotBlank
     String analysisSessionId,
-    List<AnswerRequest> answers,
-    List<String> goals
+
+    @NotEmpty
+    List<@Valid @NotNull AnswerRequest> answers,
+
+    @NotEmpty
+    List<@NotBlank String> goals
 ) {
 
     public AnalyzeSkinImageRequest {
@@ -38,8 +47,11 @@ public record AnalyzeSkinImageRequest(
     }
 
     public record AnswerRequest(
+            @NotBlank
             String questionId,
-            List<String> selectedOptionCodes
+
+            @NotEmpty
+            List<@NotBlank String> selectedOptionCodes
     ) {
     }
 

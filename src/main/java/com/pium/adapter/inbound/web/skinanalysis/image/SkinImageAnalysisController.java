@@ -6,6 +6,7 @@ import com.pium.application.skinanalysis.image.dto.AnalyzeImageResultView;
 import com.pium.application.skinanalysis.image.dto.PreAnalyzeImageView;
 import com.pium.application.skinanalysis.image.provided.AnalyzeSkinImage;
 import com.pium.application.skinanalysis.image.provided.PreAnalyzeSkinImage;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -47,7 +48,7 @@ public class SkinImageAnalysisController {
 
     @PostMapping("/analyze")
     public ResponseEntity<ApiResponse<AnalyzeSkinImageResponse>> analyze(
-            @RequestBody AnalyzeSkinImageRequest request,
+            @Valid @RequestBody AnalyzeSkinImageRequest request,
             Authentication authentication
     ) {
         AnalyzeImageResultView response = analyzeSkinImage.analyze(

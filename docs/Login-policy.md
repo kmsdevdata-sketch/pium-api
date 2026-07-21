@@ -64,15 +64,36 @@ MVP 에서는 별도 회원가입 페이지 x
 소셜 로그인 = 가입 또는 로그인 
 ---
 ## JWT규칙
-로그인 성공 시 우리 서비스 JWT를 발급
+로그인 성공 시 우리 서비스 access token과 refresh token을 발급
 - 외부 provider 토큰은 서버 내부 처리용 
-- 프론트에는 우리 JWT만 내려줌 
-- MVP는 access token만 먼저 가도 됨 
+- 프론트에는 외부 provider token을 내려주지 않음
+- access token은 API 인증용 JWT
+- refresh token은 access token 재발급용 서비스 토큰
+- refresh token 원문은 응답에만 내려주고 서버에는 hash만 저장
 - JWT claim 최소값은 userId
+- refresh token 재요청 성공 시 기존 refresh token은 폐기하고 새 refresh token으로 회전
+
+---
+## 토큰 API 규칙
+- `POST /api/v1/auth/login`
+  - OAuth authorizationCode를 검증하고 access token + refresh token 반환
+- `POST /api/v1/auth/refresh`
+  - refresh token을 검증하고 access token + refresh token을 새로 반환
+  - 기존 refresh token은 재사용할 수 없도록 폐기
+- `POST /api/v1/auth/logout`
+  - 전달받은 refresh token을 폐기
+- 회원 탈퇴 시 해당 사용자의 활성 refresh token을 모두 폐기
 ---
 ## Security 규칙 
 - 로그인 API는 `permitAll`
+- refresh/logout API는 access token 만료 상황에서도 호출 가능하도록 `permitAll`
 - 나머지 API는 인증 필요 
 - JWT필터는 우리 JWT만 검증 
 - 필터는 provider 몰라도 됨 
+
+---
+## API 에러 응답 규칙
+- 업무 예외는 `BaseException`의 `ErrorCode`를 `ApiResponse.fail`로 변환
+- 입력값 검증 실패는 `fieldErrors`에 실패 필드, 거절값, 사유를 포함
+- Spring Security 401/403도 동일한 실패 응답 envelope로 반환
 ---

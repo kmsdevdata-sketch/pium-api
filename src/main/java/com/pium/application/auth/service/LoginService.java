@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class LoginService implements Login {
 
-    private static final String BEARER = "Bearer";
     private static final String DEFAULT_PROFILE_NAME_PREFIX = "user-";
 
     private final ExchangeTossTokenPort exchangeTossTokenPort;
@@ -39,16 +38,15 @@ public class LoginService implements Login {
     private final SaveUserPort saveUserPort;
     private final SaveUserOauthPort saveUserOauthPort;
     private final SaveUserProfilePort saveUserProfilePort;
-    private final IssueAccessTokenPort issueAccessTokenPort;
+    private final AuthTokenService authTokenService;
     private final LoadUserPort loadUserPort;
 
     @Override
     public AuthTokenView login(LoginCommand command) {
         ExternalAuthenticatedUser externalUser = authenticate(command);
         UserId userId = loadOrCreateUser(externalUser);
-        String accessToken = issueAccessTokenPort.issue(userId);
 
-        return new AuthTokenView(BEARER, accessToken);
+        return authTokenService.issue(userId);
     }
 
     private ExternalAuthenticatedUser authenticate(LoginCommand command) {

@@ -15,6 +15,7 @@ import com.pium.application.productprofile.provided.GetProductProfile;
 import com.pium.domain.product.enumtype.ProductCategory;
 import com.pium.domain.product.enumtype.ProductStatus;
 import com.pium.domain.product.vo.ProductId;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,7 +44,7 @@ public class AdminProductController {
 
     @PostMapping
     public ApiResponse<ProductResponse> register(
-            @RequestBody ProductRequest.Register request
+            @Valid @RequestBody ProductRequest.Register request
     ) {
         ProductView response = registerProduct.register(request.toCommand());
         return ApiResponse.ok(ProductResponse.from(response));
@@ -52,7 +53,7 @@ public class AdminProductController {
     @PutMapping("/{productId}")
     public ApiResponse<ProductResponse> update(
             @PathVariable String productId,
-            @RequestBody ProductRequest.Update request
+            @Valid @RequestBody ProductRequest.Update request
     ) {
         ProductView response = updateProduct.update(ProductId.of(productId), request.toCommand());
         return ApiResponse.ok(ProductResponse.from(response));

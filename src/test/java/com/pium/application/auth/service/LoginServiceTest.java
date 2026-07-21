@@ -6,7 +6,6 @@ import com.pium.application.auth.fixture.AuthFixture;
 import com.pium.application.auth.required.ExchangeGoogleTokenPort;
 import com.pium.application.auth.required.ExchangeKakaoTokenPort;
 import com.pium.application.auth.required.ExchangeTossTokenPort;
-import com.pium.application.auth.required.IssueAccessTokenPort;
 import com.pium.application.auth.required.LoadGoogleUserPort;
 import com.pium.application.auth.required.LoadKakaoUserPort;
 import com.pium.application.auth.required.LoadTossUserPort;
@@ -57,7 +56,7 @@ class LoginServiceTest {
     private final SaveUserPort saveUserPort = mock(SaveUserPort.class);
     private final SaveUserOauthPort saveUserOauthPort = mock(SaveUserOauthPort.class);
     private final SaveUserProfilePort saveUserProfilePort = mock(SaveUserProfilePort.class);
-    private final IssueAccessTokenPort issueAccessTokenPort = mock(IssueAccessTokenPort.class);
+    private final AuthTokenService authTokenService = mock(AuthTokenService.class);
 
     private final LoginService service = new LoginService(
             exchangeTossTokenPort,
@@ -70,7 +69,7 @@ class LoginServiceTest {
             saveUserPort,
             saveUserOauthPort,
             saveUserProfilePort,
-            issueAccessTokenPort,
+            authTokenService,
             loadUserPort
     );
 
@@ -92,21 +91,21 @@ class LoginServiceTest {
         when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.TOSS, ProviderUserId.of(tossUser.userKey())))
                 .thenReturn(Optional.of(existingUserOauth));
         when(loadUserPort.load(existingUser.getId())).thenReturn(Optional.of(existingUser));
-        when(issueAccessTokenPort.issue(existingUser.getId())).thenReturn("service-jwt-token");
+        when(authTokenService.issue(existingUser.getId())).thenReturn(authTokenView("service-jwt-token"));
 
         AuthTokenView result = service.login(command);
 
         assertThat(result.tokenType()).isEqualTo("Bearer");
         assertThat(result.accessToken()).isEqualTo("service-jwt-token");
 
-        InOrder inOrder = inOrder(exchangeTossTokenPort, loadTossUserPort, loadUserOauthPort, issueAccessTokenPort);
+        InOrder inOrder = inOrder(exchangeTossTokenPort, loadTossUserPort, loadUserOauthPort, authTokenService);
         inOrder.verify(exchangeTossTokenPort).exchange(command.authorizationCode(), command.referrer());
         inOrder.verify(loadTossUserPort).load(tossAccessToken.accessToken());
         inOrder.verify(loadUserOauthPort).findByProviderAndProviderUserId(
                 OauthProvider.TOSS,
                 ProviderUserId.of(tossUser.userKey())
         );
-        inOrder.verify(issueAccessTokenPort).issue(existingUser.getId());
+        inOrder.verify(authTokenService).issue(existingUser.getId());
 
         verify(saveUserPort, never()).save(any());
         verify(saveUserOauthPort, never()).save(any());
@@ -137,7 +136,7 @@ class LoginServiceTest {
                 .extracting("errorCode")
                 .isEqualTo(UserErrorCode.INACTIVE_USER);
 
-        verify(issueAccessTokenPort, never()).issue(any());
+        verify(authTokenService, never()).issue(any());
         verify(saveUserPort, never()).save(any());
         verify(saveUserOauthPort, never()).save(any());
         verify(saveUserProfilePort, never()).save(any());
@@ -153,7 +152,7 @@ class LoginServiceTest {
         when(loadTossUserPort.load(tossAccessToken.accessToken())).thenReturn(tossUser);
         when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.TOSS, ProviderUserId.of(tossUser.userKey())))
                 .thenReturn(Optional.empty());
-        when(issueAccessTokenPort.issue(any(UserId.class))).thenReturn("new-user-jwt");
+        when(authTokenService.issue(any(UserId.class))).thenReturn(authTokenView("new-user-jwt"));
 
         AuthTokenView result = service.login(command);
 
@@ -165,7 +164,7 @@ class LoginServiceTest {
         verify(saveUserPort).save(userCaptor.capture());
         verify(saveUserOauthPort).save(userOauthCaptor.capture());
         verify(saveUserProfilePort).save(userProfileCaptor.capture());
-        verify(issueAccessTokenPort).issue(issuedUserIdCaptor.capture());
+        verify(authTokenService).issue(issuedUserIdCaptor.capture());
 
         User savedUser = userCaptor.getValue();
         UserOauth savedUserOauth = userOauthCaptor.getValue();
@@ -190,7 +189,7 @@ class LoginServiceTest {
         when(loadTossUserPort.load(tossAccessToken.accessToken())).thenReturn(tossUser);
         when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.TOSS, ProviderUserId.of(tossUser.userKey())))
                 .thenReturn(Optional.empty());
-        when(issueAccessTokenPort.issue(any(UserId.class))).thenReturn("fallback-jwt");
+        when(authTokenService.issue(any(UserId.class))).thenReturn(authTokenView("fallback-jwt"));
 
         service.login(command);
 
@@ -210,7 +209,7 @@ class LoginServiceTest {
         when(loadGoogleUserPort.load(googleAccessToken.accessToken())).thenReturn(googleUser);
         when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.GOOGLE, ProviderUserId.of(googleUser.userKey())))
                 .thenReturn(Optional.empty());
-        when(issueAccessTokenPort.issue(any(UserId.class))).thenReturn("google-user-jwt");
+        when(authTokenService.issue(any(UserId.class))).thenReturn(authTokenView("google-user-jwt"));
 
         AuthTokenView result = service.login(command);
 
@@ -236,7 +235,7 @@ class LoginServiceTest {
         when(loadGoogleUserPort.load(googleAccessToken.accessToken())).thenReturn(googleUser);
         when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.GOOGLE, ProviderUserId.of(googleUser.userKey())))
                 .thenReturn(Optional.empty());
-        when(issueAccessTokenPort.issue(any(UserId.class))).thenReturn("google-web-user-jwt");
+        when(authTokenService.issue(any(UserId.class))).thenReturn(authTokenView("google-web-user-jwt"));
 
         service.login(command);
 
@@ -253,7 +252,7 @@ class LoginServiceTest {
         when(loadKakaoUserPort.load(kakaoAccessToken.accessToken())).thenReturn(kakaoUser);
         when(loadUserOauthPort.findByProviderAndProviderUserId(OauthProvider.KAKAO, ProviderUserId.of(kakaoUser.userKey())))
                 .thenReturn(Optional.empty());
-        when(issueAccessTokenPort.issue(any(UserId.class))).thenReturn("kakao-user-jwt");
+        when(authTokenService.issue(any(UserId.class))).thenReturn(authTokenView("kakao-user-jwt"));
 
         AuthTokenView result = service.login(command);
 
@@ -267,5 +266,9 @@ class LoginServiceTest {
         assertThat(userOauthCaptor.getValue().getProvider()).isEqualTo(OauthProvider.KAKAO);
         assertThat(userOauthCaptor.getValue().getProviderUserId()).isEqualTo(ProviderUserId.of(kakaoUser.userKey()));
         assertThat(userProfileCaptor.getValue().getNickname()).isEqualTo(kakaoUser.name());
+    }
+
+    private AuthTokenView authTokenView(String accessToken) {
+        return new AuthTokenView("Bearer", accessToken, "refresh-token", 3600L, 1209600L);
     }
 }

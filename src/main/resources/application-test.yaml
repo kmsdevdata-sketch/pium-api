@@ -26,6 +26,7 @@ auth:
   jwt:
     secret: test-jwt-secret-key-must-be-long-enough-123
     access-token-expiration-seconds: 3600
+    refresh-token-expiration-seconds: 1209600
 
 openai:
   product-profile:
